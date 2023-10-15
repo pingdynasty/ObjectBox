@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<example xmlns:o="http://www.o-xml.org/lang/" 
+         xmlns:ex="http://www.o-xml.org/examples/">
+
+  <o:type name="User">
+    <o:variable name="name"/>
+
+    <o:constructor>
+      <o:param name="name"/>
+      <o:do/>
+    </o:constructor>
+
+    <o:function name="GetName">
+      <o:do>
+        <o:return select="$name"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="nodes">
+      <o:do>
+        <User><o:eval select="$this.GetName()"/></User>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:type name="SuperUser">
+    <o:parent name="User"/>
+    <o:variable name="password"/>
+
+    <o:constructor>
+      <o:param name="name"/>
+      <o:param name="password"/>
+      <o:parent name="User" select="User($name)"/>
+      <o:do/>
+    </o:constructor>
+
+    <o:function name="GetName">
+      <o:do>
+        <o:return select="concat('Super', $this.super('User').GetName())"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <users>
+    <o:set user="User('Foo')"/>
+    <o:log msg="User: {$user.GetName()}"/>
+    <o:eval select="$user"/>
+    <o:set user="SuperUser('Admin', 'banana')"/>
+    <o:log msg="SuperUser: {$user.GetName()}"/>
+    <o:eval select="$user"/>
+    <o:set user="narrow('User', $user)"/>
+    <o:log msg="upcast SuperUser: {$user.GetName()}"/>
+    <o:eval select="$user"/>
+  </users>
+
+</example>

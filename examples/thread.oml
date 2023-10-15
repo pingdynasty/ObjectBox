@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!-- test inline threads -->
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <o:param name="sleep" select="200"/><!-- milliseconds to sleep -->
+  <o:param name="threads" select="5"/><!-- number of threads to produce -->
+
+  <o:function name="sleep">
+    <o:param name="millis"/>
+    <o:do xmlns:java="http://www.o-xml.com/java/">
+      <java:resolve classname="java.lang.Thread"/>
+      <o:do select="Thread:sleep(number($millis))"
+	    xmlns:Thread="http://www.o-xml.com/java/java.lang.Thread"/>
+    </o:do>
+  </o:function>
+
+  <o:for-each name="i" to="$threads">
+      <o:thread>
+	<o:log msg="starting thread {$i}."/>
+	<o:eval select="sleep($sleep)"/>
+	<thread>
+	  <o:attribute name="num" select="$i"/>
+	  <o:attribute name="sleep" select="$sleep"/>
+	</thread>
+	<o:log msg="finishing thread {$i}."/>
+      </o:thread>
+  </o:for-each>
+
+</o:program>

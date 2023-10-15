@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <o:param name="xsl" select="'default.xsl'"/>
+  <o:processing-instruction target="xml-stylesheet" value="href='{$xsl}' type='text/xsl'"/>
+  <page>
+    <title>test page</title>
+  </page>
+</o:program>

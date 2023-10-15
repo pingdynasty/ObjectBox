@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- test sort -->
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <o:param name="order" select="'ascending'"/>
+  <o:param name="data-type" select="'text'"/>
+
+  <o:variable name="unsorted">
+    <item name="123">ccc</item>
+    <item name="12.3">ggg</item>
+    <item name="12.29">ghh</item>
+    <item name="321">fff</item>
+    <item name="456">ddd</item>
+    <item/>
+    <item name="123.1">eee</item>
+    <item name="aba">azz</item>
+    <item name="aaa">baa</item>
+  </o:variable>
+
+<sorted>
+  <name-sort>
+    <o:sort select="@name" order="{$order}" data-type="{$data-type}">
+      <o:eval select="$unsorted"/>
+    </o:sort>
+  </name-sort>
+
+  <text-sort>
+    <o:sort select="." order="{$order}" data-type="{$data-type}">
+      <o:eval select="$unsorted"/>
+    </o:sort>
+  </text-sort>
+</sorted>
+</o:program>

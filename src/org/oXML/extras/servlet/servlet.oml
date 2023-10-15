@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:io="http://www.o-xml.org/io/"
+  xmlns:java="http://www.o-xml.com/java/"
+  xmlns:ee="http://www.o-xml.com/java/org.oXML.engine"
+  xmlns:st="http://www.o-xml.com/servlet/">
+
+  <o:import href="lib/file.oml"/>
+  <o:import href="lib/servlet.oml"/>
+
+  <o:set sandbox="'/users/'"/>
+
+  <o:set filename="st:req.getRequestURI()"/>
+  <o:set contextPath="st:req.getContextPath()"/>
+  <o:while test="contains($filename, $contextPath)">
+    <o:set filename="substring-after($filename, $contextPath)"/>
+  </o:while>
+
+  <o:set ctxt="st:servlet().getServletConfig().getServletContext()"/>
+  <o:set filename="$ctxt.getRealPath($filename.string())"/>
+
+  <o:set sandbox="$ctxt.getRealPath($sandbox)"/>
+  <o:if test="not(starts-with($filename, $sandbox))">
+    <o:throw select="concat('not allowed to access: ', $filename)"/>
+  </o:if>
+
+  <o:set name="program" select="st:servlet().getProgram($filename)"/>
+
+  <o:set ctxt="ee:RuntimeContext()"/>
+  <o:set name="handler" select="ee:DOMResultHandler()"/>
+  <o:do select="$ctxt.addHandler($handler)"/>
+  <o:set servlet="st:Servlet($st:req, $st:res)"/>
+  <o:set result="$program.run($ctxt)"/>
+
+  <o:if test="not($result)">
+    <o:do select="$st:servlet().transform($filename, $handler, $st:res)"/>
+  </o:if>
+
+</program>

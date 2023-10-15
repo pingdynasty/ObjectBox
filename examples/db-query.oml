@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:ex="http://www.o-xml.org/examples/"
+           xmlns:doc="http://www.o-xml.org/namespace/document/"
+	   xmlns:db="http://www.o-xml.com/db/">
+  <o:param name="user-id" select="666"/>
+
+  <db:connection log="true">
+    <db:url>jdbc:mysql://localhost:3306/bullet</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+    <db:username>bullet</db:username>
+    <db:password>bullet</db:password>
+    <db:pool minFree="0" maxFree="2"/>
+    <db:transaction retry="0"/>
+  </db:connection>
+
+  <o:variable name="name">
+    <db:execute sql="select name from users where id={$user-id}">{$name}</db:execute>
+  </o:variable>
+
+  <o:log msg="name: {$name}"/>
+
+  <o:if test="not($name)">
+    <o:set name="'belzebuub'"/>
+    <db:execute sql="insert into users(id, name, realname) values({$user-id}, {db:quote($name)}, 'the goofball')"/>
+  </o:if>
+
+  <db:query name="setUserName">
+    <db:param name="userId" type="Number"/>
+    <db:param name="name" type="String"/>
+    <db:sql>update users set name = {$name} where id = {$userId}</db:sql>
+  </db:query>
+
+  <db:call query="setUserName" userId="$user-id" name="'figaro'"/>
+
+  <db:execute sql="select name from users where id={$user-id}">
+    <user name="{$name}"/>
+  </db:execute>
+
+  <db:call query="setUserName" userId="$user-id" name="$name"/>
+
+  <db:execute sql="select name from users where id={$user-id}">
+    <user>{$name}</user>
+  </db:execute>
+
+  <db:query name="user">
+    <db:param name="userId" type="Number"/>
+    <db:sql>select * from users where id = {$userId}</db:sql>
+    <db:result>
+      <user userId="{$id}">
+	<name name="{$name}">{$name}</name>
+	<description>Real name: {$realname}</description>
+      </user>
+    </db:result>
+  </db:query>
+
+  <db:call query="user" userId="$user-id"/>
+
+  <!-- test recursive queries -->
+  <db:query name="postings-per-user">
+    <db:sql>select id, name from users</db:sql>
+    <db:result>
+      <user userId="{$id}">
+	<name name="{$name}">{$name}</name>
+	<postings>
+	  <db:call query="user-postings" userId="$id"/>
+	</postings>
+      </user>
+    </db:result>
+  </db:query>
+
+  <db:query name="user-postings">
+    <db:param name="userId" type="Number"/>
+    <db:sql>select id, subject from posting where owner = {$userId}</db:sql>
+    <db:result>
+      <posting postingId="{$id}">
+	<subject>{$subject}</subject>
+	<db:call query="sub-postings" parentId="$id"/>
+      </posting>
+    </db:result>
+  </db:query>
+
+  <!-- self recursive query! -->
+  <db:query name="sub-postings">
+    <db:param name="parentId" type="Number"/>
+    <db:sql>select id, subject from posting where parent = {$parentId}</db:sql>
+      <posting postingId="{$id}">
+	<subject>{$subject}</subject>
+	<db:call query="sub-postings" parentId="$id"/>
+    </posting>
+  </db:query>
+
+  <db:call query="postings-per-user"/>
+
+  <db:call query="user-postings" userId="$user-id"/>
+
+</o:program>

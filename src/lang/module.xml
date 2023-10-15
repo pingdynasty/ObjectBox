@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<o:module java:package="org.oXML.type" java:class="CoreModule"
+	  xmlns:xi="http://www.w3.org/2001/XInclude"
+	  xmlns:o="http://www.o-xml.org/lang/" 
+	  xmlns:java="http://www.o-xml.org/java">
+
+  <xi:include href="Node.oml"/>
+  <xi:include href="Parent.oml"/>
+  <xi:include href="Number.oml"/>
+  <xi:include href="Boolean.oml"/>
+  <xi:include href="String.oml"/>
+  <xi:include href="Name.oml"/>
+  <xi:include href="Bytes.oml"/>
+  <xi:include href="Element.oml"/>
+<!--   <xi:include href="Nodeset.oml"/>  see src/org/oXML/type/NodesetNode.java -->
+  <xi:include href="Attribute.oml"/>
+  <xi:include href="ProcessingInstruction.oml"/>
+  <xi:include href="Comment.oml"/>
+  <xi:include href="Document.oml"/>
+  <xi:include href="DocumentType.oml"/>
+  <xi:include href="Entity.oml"/>
+  <xi:include href="Notation.oml"/>
+  <xi:include href="Exception.oml"/>
+  <xi:include href="ExceptionHandler.oml"/>
+  <xi:include href="SystemError.oml"/>
+  <xi:include href="AssertionError.oml"/>
+  <xi:include href="Map.oml"/>
+  <xi:include href="List.oml"/>
+  <xi:include href="Table.oml"/>
+  <xi:include href="Thread.oml"/>
+  <xi:include href="RegularExpression.oml"/>
+  <xi:include href="Program.oml"/>
+  <xi:include href="Stack.oml"/>
+<!--  <xi:include href="Array.oml"/>  not yet ready -->
+
+  <xi:include href="function/string-functions.oml"/>
+  <xi:include href="function/number-functions.oml"/>
+  <xi:include href="function/boolean-functions.oml"/>
+  <xi:include href="function/nodeset-functions.oml"/>
+  <xi:include href="function/system-functions.oml"/>
+
+</o:module>

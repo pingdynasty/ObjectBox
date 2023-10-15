@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<o:type name="Array" java:class="ArrayNode"
+	xmlns:o="http://www.o-xml.org/lang/" 
+	xmlns:java="http://www.o-xml.org/java"
+	xmlns:doc="http://www.o-xml.org/namespace/document/"
+	xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    <doc:type/> represents an n-dimensional array.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="dims" java:class="int"/>
+
+  <o:constructor>
+    <o:param name="other" type="Array"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      dims = other.dims;
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="cols"/>
+    <o:param name="rows"/>
+    <doc:p>Create a new <doc:type/> of the given dimensions</doc:p>
+    <java:code>
+      dims = 2;
+    </java:code>
+  </o:constructor>
+
+  <o:function name="dimensions">
+    <java:code>
+      return new NumberNode((double)dims);
+    </java:code>
+  </o:function>
+
+</o:type>
+

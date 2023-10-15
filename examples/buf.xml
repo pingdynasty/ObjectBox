@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/"
+  xmlns:java="http://www.o-xml.com/java/">
+
+  <o:log msg="works for me"/>
+  <java:resolve classname="java.lang.StringBuffer" />
+
+  <test xmlns:java-lang="http://www.o-xml.com/java/java.lang"
+        xmlns:java-text="http://www.o-xml.com/java/java.text"
+        xmlns:java-util="http://www.o-xml.com/java/java.util">
+
+    <buffer>
+      <o:variable name="buf" select="java-lang:StringBuffer('piece')"/>
+
+      <o:eval select="$buf.append(' of string')"/>
+
+      <o:log msg="buf: {$buf.getClass()}."/>
+
+      <o:eval select="$buf.substring(6,8)"/>
+    </buffer>
+
+    <o:procedure name="ex:append">
+      <o:param name="buf" type="java-lang:StringBuffer"/>
+      <o:param name="val" type="Node"/>
+      <o:do>
+        <o:eval select="$buf.append($val)"/>
+      </o:do>
+    </o:procedure>
+
+    <o:variable name="var" select="java-lang:StringBuffer('init')"/>
+    <one>
+      <ex:append buf="$var" val="' piece of string '"/>
+    </one>
+    <one>
+      <ex:append buf="$var" val="123"/>
+    </one>
+    <one>
+      <ex:append buf="$var" val="$var"/>
+    </one>
+
+  </test>
+
+</program>

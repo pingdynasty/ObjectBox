@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <o:param name="o:session" type="Map"/>
+  <o:param name="key" select="/.."/>
+  <o:param name="value" select="/.."/>
+
+  <results>
+    <o:log msg="count: {count($o:session.keys())}"/>
+    <values>
+      <o:eval select="$o:session.values()"/>
+    </values>
+
+    <keys>
+      <o:eval select="$o:session.keys()"/>
+    </keys>
+
+    <o:for-each name="item" select="$o:session.keys()">
+      <setting>
+	<key><o:eval select="$item"/></key>
+      <value><o:eval select="$o:session.get($item)"/></value>
+      </setting>
+    </o:for-each>
+  </results>
+
+  <!-- set session value -->
+  <o:do select="$o:session.put($key, $value)"/>
+
+</o:program>

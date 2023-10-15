@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <!-- sample o:XML bean that is missing the return statement -->
+
+  <o:type name="Messenger">
+    <o:variable name="message"/>
+
+    <o:function name="setMessage">
+      <o:param name="message"/>
+      <o:do/>
+    </o:function>
+
+    <o:function name="getMessage">
+      <o:do>
+        <o:return select="$message"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+</o:program>

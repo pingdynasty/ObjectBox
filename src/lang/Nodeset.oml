@@ -1,0 +1,250 @@
+<?xml version="1.0"?>
+<o:type name="Nodeset" java:class="NodesetNode" java:type="new NodesetType()"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A Nodeset contains zero or more nodes.
+    Nodeset does not derive from Parent, because it is only a temporary container of nodes.
+    <!-- Does derive from Node: Need to be able to pass Nodesets to functions that take Node args-->
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="kids" java:class="Nodeset"/>
+
+  <o:constructor>
+    <o:param name="other" type="Nodeset"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      kids = new org.oXML.xpath.iterator.DynamicNodeset();
+      if(deep){
+        for(int i=0; i &lt; other.kids.size(); ++i){
+	  Node kid = other.kids.getNode(i).copy(true);
+          kids.addNode(kid);
+	}
+      }else{
+        for(int i=0; i &lt; other.kids.size(); ++i){
+          kids.addNode(other.kids.getNode(i));
+	}
+      }
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public static final NodesetNode EMPTY_SET = new NodesetNode(Nodeset.EMPTY_SET);
+
+    public NodesetNode(Nodeset set){
+      this();
+      kids = set;
+    }
+
+    public Nodeset getNodeset(){
+        return kids;
+    }
+  </java:code>
+
+<!-- enforce use of List() or Set() instead of Nodeset() by disallowing ctor -->
+  <o:constructor access="system">
+    <java:code>
+//      Log.trace("ctor: "+new Exception().getStackTrace()[2]);
+//      Log.trace("ctor: "+new Exception().getStackTrace()[3]);
+//      Log.trace("ctor: "+new Exception().getStackTrace()[4]);
+//      Log.trace("ctor: "+new Exception().getStackTrace()[5]);
+//      Log.trace("ctor: "+new Exception().getStackTrace()[6]);
+//      Log.trace("ctor: "+new Exception().getStackTrace()[7]);
+      kids = new org.oXML.xpath.iterator.DynamicNodeset();
+    </java:code>
+  </o:constructor>
+
+<!-- use prepend/append instead 
+  <o:function name="add">
+    <o:param name="node"/>
+    <doc:p>
+      Add a node to this Nodeset.
+    </doc:p>
+    <java:code>
+      target.addChildNode(node);
+      return target;
+    </java:code>
+    <ut:test>
+      <ut:input ref="set"/>
+      <ut:definition>
+        <o:return select="count($input.add(Element('four')))"/>
+      </ut:definition>
+      <ut:result>4</ut:result>
+    </ut:test>
+  </o:function>
+-->
+<!--
+  <o:function name="parent">
+    <java:code>
+      NodesetNode result = new NodesetNode();
+      Nodeset kids = this.getChildNodes();// how to get kids from Parent?
+      for(int i=0; i &lt; kids.size(); ++i){
+        Node from = kids.getNode(i);
+        Node parent = from.getParent();
+        if(parent != null)
+          result.addChildNode(parent);
+      }
+      return result;
+    </java:code>
+  </o:function>
+-->
+
+<!-- dodgy ?? -->
+<!--
+  <o:function name="insertBefore">
+    <o:param name="other"/>
+    <java:code>
+      Nodeset kids = this.getChildNodes();
+      for(int i=0; i &lt; kids.size(); ++i){
+        Node from = kids.getNode(i);
+        Node parent = from.getParent();
+        if(parent != null)
+          parent.insertBefore(other.copy(true), from);
+      }
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="insertAfter">
+    <o:param name="other"/>
+    <java:code>
+      Nodeset kids = this.getChildNodes();
+      for(int i=0; i &lt; kids.size(); ++i){
+        Node from = kids.getNode(i);
+        Node parent = from.getParent();
+        if(parent != null)
+          parent.insertAfter(other.copy(true), from);
+      }
+      return this;
+    </java:code>
+  </o:function>
+-->
+
+<!--
+  <o:function name="replace">
+    <o:param name="replacement"/>
+    <java:code>
+	NodeIterator fromit = this.getChildNodes().getIterator();
+	Node from = fromit.nextNode();
+	while(from != null){
+	    replacement = replacement.copy(true);
+	    from.getParent().replaceChild(from, replacement);
+	    from = fromit.nextNode();
+	}
+	return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+-->
+  <!-- no public modifiers!
+  <o:function name="add">
+    <o:param name="child"/>
+    <doc:p>
+      Add a node to the end of this <doc:type/>.
+    </doc:p>
+    <doc:param>the node to append</doc:param>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      this.insert(kids.size(), child);
+      return this;
+    </java:code>
+  </o:function> -->
+
+  <o:function name="append">
+    <o:param name="child"/>
+    <java:code>
+      kids.addNode(child);
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="append">
+    <o:param name="child" type="Nodeset"/>
+    <java:code>
+      Nodeset sub = child.getNodeset();
+      for(int i=0; i &lt; sub.size(); ++i)
+        kids.addNode(sub.getNode(i));
+      return this;
+    </java:code>
+  </o:function>
+
+  <ut:dataset name="set">
+    <one/>
+    <two/>
+    <three/>
+  </ut:dataset>
+
+  <o:function name="string">
+    <doc:p>Get the String value of this <doc:type/>.</doc:p>
+    <doc:see>XPath v1.0 4.2 String Functions</doc:see>
+    <doc:p>A node-set is converted to a string by returning the string-value of the node in the node-set that is first in document order. If the node-set is empty, an empty string is returned.</doc:p>
+    <java:code>
+      // should be: o:return select="nodes()[1].string()"
+      Node kid = kids.getNode(0);
+      if(kid == null)
+        return new StringNode("");
+      return new StringNode(kid.stringValue());
+    </java:code>
+  </o:function>
+
+  <o:function name="boolean" java:name="_boolean">
+    <doc:p>Get the Boolean value of this <doc:type/>.</doc:p>
+    <doc:see>XPath v1.0 4.3 Boolean Functions</doc:see>
+    <doc:p>A node-set is true if and only if it is non-empty.</doc:p>
+    <java:code>
+      return BooleanNode.booleanNode(!kids.isEmpty());
+    </java:code>
+  </o:function>
+<!--
+  <o:function name="remove">
+    <java:code>
+      for(int i=0; i &lt; kids.size(); ++i){
+        Node kid = kids.getNode(i);
+        Node parent = kid.getParent();
+        if(parent != null)
+          parent.removeChild(kid);
+      }
+      return this;
+    </java:code>
+  </o:function> -->
+
+   <o:function name="count">
+     <java:code>
+       return new NumberNode(kids.size());
+     </java:code>
+     <ut:test>
+       <ut:input ref="set"/>
+       <ut:definition>
+         <o:return select="$input.count()"/>
+       </ut:definition>
+       <ut:result>3</ut:result>
+     </ut:test>
+  </o:function>
+
+  <o:function name="position">
+    <o:param name="child"/>
+    <doc:p>Get the position of a Node in this <doc:type/></doc:p>
+    <java:code>
+      return new NumberNode(kids.indexOf(child)+1);
+    </java:code>
+     <ut:test>
+       <ut:input ref="set"/>
+       <ut:definition>
+	 <o:return select="$input.position($input/two)"/>
+       </ut:definition>
+       <ut:result>2</ut:result>
+     </ut:test>
+  </o:function>
+
+  <o:function name="nodes">
+    <doc:p>Get a nodeset containing the child nodes of this <doc:type/>, if any.</doc:p>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      return this;
+    </java:code>
+  </o:function>
+</o:type>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ut:suite xmlns:o="http://www.o-xml.org/lang/"
+          xmlns:ut="http://www.o-xml.org/namespace/unit-test/"
+	  xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:meta>
+
+  <ut:dataset name="NumberElements">
+    <Number>1</Number>
+    <Number>2</Number>
+    <Number>3</Number>
+    <Number>4</Number>
+    <Number>5</Number>
+  </ut:dataset>
+
+  <ut:test name="TestIteratedContextNode">
+    <ut:definition>
+      <o:set pos="0"/>
+      <o:for-each select="$input">
+        <o:set pos="$pos + 1"/>
+        <o:assert test="number(.) = $pos"/>
+      </o:for-each>
+    </ut:definition>
+    <ut:input ref="NumberElements"/>
+  </ut:test>
+
+  <ut:test name="TestIteratedContextPosition">
+    <ut:definition>
+      <o:set pos="0"/>
+      <o:for-each select="$input">
+        <o:set pos="$pos + 1"/>
+        <o:assert test="position() = $pos"/>
+      </o:for-each>
+    </ut:definition>
+    <ut:input ref="NumberElements"/>
+  </ut:test>
+
+  </o:meta>
+
+</ut:suite>

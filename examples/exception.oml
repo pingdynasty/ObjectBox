@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/" >
+
+    <o:type name="URLException">
+      <o:parent name="Exception"/>
+      <o:variable name="url"/>
+
+      <o:function name="URLException">
+        <o:param name="error"/>
+        <o:param name="url"/>
+        <o:parent name="Exception" select="Exception($error)"/>
+        <o:do/>
+      </o:function>
+
+      <o:function name="url">
+        <o:do>
+          <o:return select="$url"/>
+        </o:do>
+      </o:function>
+    </o:type>
+
+    <o:type name="NetworkExceptionHandler">
+      <o:parent name="ExceptionHandler"/>
+
+      <o:function name="handle">
+        <o:param name="exception" type="URLException"/>
+        <o:do>
+          <o:log level="error" msg="{$exception.message()}"/>
+          <o:log level="error" msg="source location: {$exception.location()}"/>
+          <o:log level="error" msg="in URL: {$exception.url()}"/>
+        </o:do>
+      </o:function>
+    </o:type>
+
+    <o:function name="open">
+      <o:param name="url"/>
+      <o:do>
+        <o:if test="not(starts-with($url, 'http://'))">
+          <o:throw select="URLException('unsupported protocol!', $url)"/>
+        </o:if>
+        <o:log msg="opening URL: {$url}"/>
+      </o:do>
+    </o:function>
+
+    <o:catch exceptions="URLException" handler="NetworkExceptionHandler()">
+
+      <o:do select="open('ftp://somewhere.com')"/>
+
+    </o:catch>
+
+</o:program>

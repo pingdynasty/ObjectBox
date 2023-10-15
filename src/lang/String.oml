@@ -1,0 +1,509 @@
+<?xml version="1.0"?>
+<o:type name="String" java:class="StringNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A String node represents an immutable Unicode character sequence.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="value" java:class="String"/>
+
+  <o:constructor>
+    <o:param name="other" type="String"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      value = other.value;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public StringNode(String value){
+        this();
+        this.value = value == null ? "" : value;
+    }
+
+    /**
+     * turn a string into a number
+     */
+    public static final double numberValue(String value){
+        try{
+            return Double.parseDouble(value);
+        }catch(NumberFormatException exc){
+            return Double.NaN;
+        }
+    }
+
+    public String getString(){
+         return value;
+    }
+
+    public static String substring(String string, double index){
+	if(Double.isNaN(index) || 
+	   Double.isInfinite(index))
+	    return "";
+	int start = (int)index - 1;
+	int end = string.length();
+	if(start &lt; 0)
+	    start = 0;
+	else if(start >= end)
+	    return "";        
+	return string.substring(start, end);
+    }
+
+    public static String substring(String string, double index1, double index2){
+	if(Double.isNaN(index1) || 
+	   Double.isInfinite(index1) ||
+	   Double.isNaN(index2))
+	    return "";
+	int start = (int)index1 - 1;
+	int end = string.length();
+	if(start &lt; 0)
+	    start = 0;
+	else if(start >= end)
+	    return "";
+	if(!Double.isInfinite(index2))
+	    end = start + (int)index2;
+	if(end > string.length())
+	    end = string.length();
+	if(end &lt;= start)
+	    return "";
+	return string.substring(start, end);
+    }
+
+    public StringNode merge(Node other){
+//        StringNode string = (StringNode)other.cast(StringNode.TYPE);
+//	value += string.value;
+//        value += other.stringValue();
+//	return this; // not immutable?!
+        // polymophic
+        return new StringNode(this.stringValue() + other.stringValue());
+    }
+	
+    public int hashCode(){
+        return value.hashCode();
+    }
+
+    public String toString(){
+	return super.toString()+'&lt;'+value+'&gt;';
+    }
+</java:code>
+
+  <o:constructor>
+    <o:param name="value"/>
+    <java:code>
+      this.value = value.stringValue();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="length">
+    <doc:p>Get the size of this string</doc:p>
+    <doc:return>The number of characters in this String</doc:return>
+    <java:code>
+      return new NumberNode(value.length());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="$input.string().length()"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>30</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="upper">
+    <doc:p>
+      Get this character sequence turned into upper case.
+    </doc:p>
+    <java:code>
+      return new StringNode(value.toUpperCase());
+    </java:code>
+  </o:function>
+
+  <o:function name="lower">
+    <doc:p>
+      Get this character sequence turned into lower case.
+    </doc:p>
+    <java:code>
+      return new StringNode(value.toLowerCase());
+    </java:code>
+  </o:function>
+
+  <o:function name="concat">
+    <o:param name="other"/>
+    <doc:p>
+      Create a new String that is the concatentation of this String and the string value of <doc:param name="other"/>.
+    </doc:p>
+    <java:code>
+      return new StringNode(value + other.stringValue());
+    </java:code>
+  </o:function>
+
+  <o:function name="startsWith">
+    <doc:p>
+      Determine whether this String starts with the character sequence represented by the string value of <doc:param name="other"/>.
+    </doc:p>
+    <o:param name="other"/>
+    <java:code>
+      return BooleanNode.booleanNode(value.startsWith(other.stringValue()));
+    </java:code>
+  </o:function>
+
+  <o:function name="endsWith">
+    <doc:p>
+      Determine whether this String ends with the character sequence represented by the string value of <doc:param name="other"/>.
+    </doc:p>
+    <o:param name="other"/>
+    <java:code>
+      return BooleanNode.booleanNode(value.endsWith(other.stringValue()));
+    </java:code>
+  </o:function>
+
+  <o:function name="contains">
+    <o:param name="other"/>
+    <doc:p>
+      Determine whether this String contains the character sequence represented by the string value of <doc:param name="other"/>.
+    </doc:p>
+    <java:code>
+      return BooleanNode.booleanNode(value.indexOf(other.stringValue()) != -1);
+    </java:code>
+  </o:function>
+
+  <o:function name="substring" java:throws="ObjectBoxException">
+    <o:param name="from"/>
+    <doc:p>
+      Create a new String that is the character sequence that starts at position <doc:param name="from"/> of this String and continues to the end of the sequence.
+    </doc:p>
+    <doc:same>substring($this, $from)</doc:same>
+    <java:code>
+	return new StringNode(substring(value, from.numberValue()));
+    </java:code>
+  </o:function>
+
+  <o:function name="substring">
+    <o:param name="from"/>
+    <o:param name="to"/>
+    <doc:p>
+      Create a new String that is the character sequence that starts at and includes position <doc:param name="from"/> of this String and continues to position <doc:param name="to"/>, noninclusive.
+    </doc:p>
+    <doc:same>substring($this, $from, $to)</doc:same>
+    <java:code>
+	return new StringNode(substring(value, from.numberValue(), to.numberValue()));
+    </java:code>
+  </o:function>
+
+  <o:function name="substringBefore">
+    <o:param name="other"/>
+    <doc:p>
+      Get the character sequence that starts at the beginning of this String and continues to the first position of the string value of <doc:param name="other"/>.
+    </doc:p>
+    <doc:return>A new String containing the sequence before the first match, or an empty String if this <doc:type/> does not contain <doc:param/></doc:return>
+    <java:code>
+      String string1 = value;
+      String string2 = other.stringValue();
+      String result;
+      int pos = string1.indexOf(string2);
+      if(pos == -1)
+         result = "";
+      else
+         result = string1.substring(0, pos);
+      return new StringNode(result);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="$input.string().substringBefore(' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>how</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substringBeforeLast">
+    <o:param name="other"/>
+    <doc:p>
+      Create a new String that is the character sequence that starts at the beginning of this String and continues to the last position of the string value of <doc:param name="other"/>.
+    </doc:p>
+    <doc:return>A new String containing the sequence before the last match, or an empty String if this <doc:type/> does not contain <doc:param/></doc:return>
+    <java:code>
+      String string1 = value;
+      String string2 = other.stringValue();
+      String result;
+      int pos = string1.lastIndexOf(string2);
+      if(pos == -1)
+         result = "";
+      else
+         result = string1.substring(0, pos);
+      return new StringNode(result);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="$input.string().substringBeforeLast(' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>how long is a piece of</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substringAfter">
+    <o:param name="other"/>
+    <doc:p>
+      Create a new String that is the character sequence that starts after the first position in this String of the string value of <doc:param name="other"/> and continues to the end.
+    </doc:p>
+    <doc:return>A new String containing the sequence after the first match, or an empty String if this <doc:type/> does not contain <doc:param/></doc:return>
+    <java:code>
+      String string1 = value;
+      String string2 = other.stringValue();
+      String result;
+      int pos = string1.indexOf(string2);
+      if(pos == -1)
+         result = "";
+      else
+         result = string1.substring(pos + string2.length());
+      return new StringNode(result);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="$input.string().substringAfter(' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>long is a piece of string?</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substringAfterLast">
+    <o:param name="other"/>
+    <doc:p>
+      Create a new String that is the character sequence that starts after the last position in this String of the string value of <doc:param name="other"/> and continues to the end.
+    </doc:p>
+    <doc:return>A new String containing the sequence after the last match, or an empty String if this <doc:type/> does not contain <doc:param/></doc:return>
+    <java:code>
+      String string1 = value;
+      String string2 = other.stringValue();
+      String result;
+      int pos = string1.lastIndexOf(string2);
+      if(pos == -1)
+         result = "";
+      else
+         result = string1.substring(pos + string2.length());
+      return new StringNode(result);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="$input.string().substringAfterLast(' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>string?</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="indexOf">
+    <o:param name="other"/>
+    <doc:p>Get the first index of <doc:param/>.</doc:p>
+    <doc:return>The index of the first occurence of the string value of <doc:param/> if contained within this String (starting at 1), otherwise 0.</doc:return>
+    <java:code>
+      return new NumberNode(value.indexOf(other.stringValue())+1);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="$input.string().indexOf(' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>4</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="lastIndexOf">
+    <o:param name="other"/>
+    <doc:p>Get the last index of <doc:param/>.</doc:p>
+    <doc:return>The index of the last occurence of the string value of <doc:param/> if contained within this String (starting at 1), otherwise 0.</doc:return>
+    <java:code>
+      return new NumberNode(value.lastIndexOf(other.stringValue())+1);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="$input.string().lastIndexOf(' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>23</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="trim">
+    <doc:p>
+      Creates a new String by removing any leading or trailing whitespace from this String.
+    </doc:p>
+    <java:code>
+      return new StringNode(value.trim());
+    </java:code>
+  </o:function>
+
+  <o:function name="translate">
+    <o:param name="from"/>
+    <o:param name="to"/>
+    <doc:same>translate($this, $from, $to)</doc:same>
+    <java:code>
+      return CoreModule.translate(this, from, to);
+    </java:code>
+  </o:function>
+
+  <o:function name="matches" java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <doc:return>
+      Boolean true if this string matches <doc:param/> at least once.
+    </doc:return>
+    <doc:same>RegularExpression($pattern).matches($this)</doc:same>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.matches(this);
+    </java:code>
+  </o:function>
+
+  <o:function name="match" java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <doc:p>
+      Returns a nodeset containing a String for each match in this String of the regular expression <doc:param name="pattern"/>.
+    </doc:p>
+    <doc:same>RegularExpression($pattern).match($this)</doc:same>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.match(this);
+    </java:code>
+  </o:function>
+
+  <o:function name="match" java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <o:param name="limit"/>
+    <doc:p>
+      Returns a nodeset containing a String for each match in this String of the regular expression <doc:param name="pattern"/>, stopping after <doc:param name="limit"/> splits.
+    </doc:p>
+    <doc:same>RegularExpression($pattern).match($this, $limit)</doc:same>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.match(this, limit);
+    </java:code>
+  </o:function>
+
+  <o:function name="split" java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <o:param name="limit"/>
+    <doc:p>
+      Returns a nodeset containing the substring before and after each match in this String of the regular expression <doc:param name="pattern"/>, stopping after <doc:param name="limit"/> splits.
+    </doc:p>
+    <doc:same>RegularExpression($pattern).split($this, $limit)</doc:same>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.split(this, limit);
+    </java:code>
+  </o:function>
+
+  <o:function name="split" java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <doc:p>
+      Returns a nodeset containing the substring before and after each match in this String of the regular expression <doc:param name="pattern"/>.
+    </doc:p>
+    <doc:same>RegularExpression($pattern).split($this)</doc:same>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.split(this);
+    </java:code>
+  </o:function>
+
+  <o:function name="substitute" java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <o:param name="substitution"/>
+    <o:param name="limit"/>
+    <doc:p>
+      Creates a new String where every match of the regular expression <doc:param name="pattern"/> has been replaced by the substitution expression <doc:param name="substitution"/>, stopping after <doc:param name="limit"/> substitutions.
+    </doc:p>
+    <doc:same>RegularExpression($pattern).substitute($this, $substitution, $limit)</doc:same>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.substitute(this, substitution, limit);
+    </java:code>
+  </o:function>
+
+  <o:function name="substitute" java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <o:param name="substitution"/>
+    <doc:p>
+      Creates a new String where every match of the regular expression <doc:param name="pattern"/> has been replaced by the substitution expression <doc:param name="substitution"/>.
+    </doc:p>
+    <doc:same>RegularExpression($pattern).substitute($this, $replacement)</doc:same>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.substitute(this, substitution);
+    </java:code>
+  </o:function>
+
+  <o:function name="charCodeAt">
+    <o:param name="position"/>
+    <doc:p>
+      Get the character code for the character at the given zero-indexed position.
+      If this string does not have enough characters this function returns the empty set.
+    </doc:p>
+    <java:code>
+      int pos = (int)position.numberValue();
+      if(pos >= value.length())
+          return NodesetNode.EMPTY_SET;
+      char c = value.charAt(pos);
+      return new NumberNode((int)c);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:assert test="$input.charCodeAt(0) = 104"/>
+        <o:assert test="$input.charCodeAt(8) = 32"/>
+        <o:assert test="$input.charCodeAt(29) = 63"/>
+        <o:assert test="not($input.charCodeAt(30))"/>
+        <o:return select="$input.charCodeAt(7)"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>103</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <doc:p>Get the string value of this <doc:type/>.</doc:p>
+    <java:code>
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="number">
+    <doc:see>XPath v1.0 4.4 Number Functions</doc:see>
+    <doc:p>A string that consists of optional whitespace followed by an
+      optional minus sign followed by a Number followed by whitespace
+      is converted to the IEEE 754 number that is the nearest
+      (according to the IEEE 754 round-to-nearest rule) to the
+      mathematical value represented by the string; any other string
+      is converted to NaN.</doc:p>
+    <java:code>
+      try{
+          return new NumberNode(Double.parseDouble(value));
+      }catch(NumberFormatException exc){
+          return new NumberNode(Double.NaN);
+      }
+    </java:code>
+  </o:function>
+
+  <o:function name="boolean" java:name="_boolean">
+    <doc:p>Get the Boolean value of this <doc:type/>.</doc:p>
+    <doc:see>XPath v1.0 4.3 Boolean Functions</doc:see>
+    <doc:p>A string is true if and only if its length is non-zero</doc:p>
+    <java:code>
+      return BooleanNode.booleanNode(value.length() != 0);
+    </java:code>
+  </o:function>
+
+  <o:function name="bytes">
+    <doc:p>Encode this <doc:type/> into a sequence of bytes.</doc:p>
+    <doc:return>A new Bytes object</doc:return>
+    <java:code>
+      return new BytesNode(value.getBytes());
+    </java:code>
+  </o:function>
+</o:type>
+

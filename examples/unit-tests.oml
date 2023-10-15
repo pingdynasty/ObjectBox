@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<o:do xmlns:o="http://www.o-xml.org/lang/" 
+          xmlns:ut="http://www.o-xml.org/namespace/unit-test/"
+          xmlns:doc="http://www.o-xml.org/namespace/document/"
+          xmlns:ex="http://www.o-xml.org/examples/">
+
+  <o:type name="ex:User">
+    <doc:p>Simple example type that incorporates function and type unit tests.</doc:p>
+    <doc:p>This file can be tested from the command line with the -test switch.</doc:p>
+
+    <o:variable name="firstname"/>
+    <o:variable name="surname"/>
+
+    <o:constructor>
+      <o:param name="firstname"/>
+      <o:param name="surname"/>
+      <o:do/>
+    </o:constructor>
+
+    <o:constructor>
+      <o:param name="name"/>
+      <o:do>
+        <o:set firstname="substring-before($name, ' ')"/>
+        <o:set surname="substring-after($name, ' ')"/>
+      </o:do>
+      <ut:test>
+        <ut:definition>
+          <o:assert test="ex:User('Evariste Galois')"/>
+        </ut:definition>
+      </ut:test>
+    </o:constructor>
+
+    <o:function name="GetFullName">
+      <o:do>
+        <o:return select="concat($firstname, ' ', $surname)"/>
+      </o:do>
+      <ut:test>
+        <ut:definition>
+          <o:set user="ex:User('Evariste', 'Galois')"/>
+          <o:return select="$user.GetFullName()"/>
+        </ut:definition>
+        <ut:result>Evariste Galois</ut:result>
+      </ut:test>
+    </o:function>
+
+    <o:function name="GetFirstName">
+      <o:do>
+        <o:return select="$firstname"/>
+      </o:do>
+      <ut:test>
+        <ut:input ref="vingtras"/>
+        <ut:definition>
+          <o:set user="ex:User($input)"/>
+          <o:assert test="$user.GetFirstName() = 'Jacques'"/>
+        </ut:definition>
+      </ut:test>
+    </o:function>
+
+    <o:function name="GetLastName">
+      <o:do>
+        <o:return select="$surname"/>
+      </o:do>
+      <ut:test>
+        <ut:input ref="valles"/>
+        <ut:definition>
+          <o:set user="ex:User($input)"/>
+          <o:return select="$user.GetLastName()"/>
+        </ut:definition>
+        <ut:result>Vallès</ut:result>
+      </ut:test>
+    </o:function>
+
+    <!-- define two datasets -->
+    <ut:dataset name="valles">Jules Vallès</ut:dataset>
+    <ut:dataset name="vingtras">Jacques Vingtras</ut:dataset>
+
+    <!-- define a test definition -->
+    <ut:definition name="FullNameTest">
+      <o:set user="ex:User($input)"/>
+      <o:return select="$user.GetFullName()"/>
+    </ut:definition>
+
+    <!-- define two tests using the previously defined datasets and definition -->
+    <ut:test>
+      <ut:input ref="valles"/>
+      <ut:definition ref="FullNameTest"/>
+      <ut:result ref="valles"/>
+    </ut:test>
+
+    <ut:test>
+      <ut:input ref="vingtras"/>
+      <ut:definition ref="FullNameTest"/>
+      <ut:result ref="vingtras"/>
+    </ut:test>
+
+  </o:type>
+
+</o:do>

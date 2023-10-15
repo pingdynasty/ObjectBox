@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates whitespace and comments handling -->
+<literal>
+
+  <whitespace>              </whitespace>
+
+  <!-- within plain XML there's no removing of whitespace or comments -->
+
+  <o:do xmlns:o="http://www.o-xml.org/lang/">
+
+    <!-- but within o:XML nodes there is -->
+
+    <whitespace>              </whitespace>
+
+  </o:do>
+
+  <whitespace>              </whitespace>
+
+  <literal>
+
+    <!-- within plain XML there's no removing of whitespace or comments -->
+
+  </literal>
+
+</literal>

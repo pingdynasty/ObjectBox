@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:ex="http://www.o-xml.org/examples/"
+           xmlns:doc="http://www.o-xml.org/namespace/document/"
+	   xmlns:db="http://www.o-xml.com/db/">
+
+  <db:connection name="c1" log="true" dialect="foo">
+    <db:url>jdbc:mysql://localhost:3306/test</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+  </db:connection>
+
+  <db:connection name="c2" log="true" dialect="bar">
+    <db:url>jdbc:mysql://localhost:3306/test</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+  </db:connection>
+
+  <!-- prime the database -->
+  <db:execute connection="c1" sql="create table if not exists users(id int primary key auto_increment, name varchar(30), surname varchar(30))"/>
+  <db:execute connection="c1" sql="insert into users(name, surname) values('Evariste', 'Galois'), ('Pierre', 'Fermat'), ('Leonhard', 'Euler')"/>
+
+  <o:set user-id="2"/>
+
+  <db:query name="getUserName1" connection="c1">
+    <db:param name="userId" type="Number"/>
+    <db:sql dialect="foo">select 'foo' as name from users where id = {$userId}</db:sql>
+    <db:sql dialect="bar">select 'bar' as name from users where id = {$userId}</db:sql>
+    <db:sql dialect="foobar">select 'foobar' as name from users where id = {$userId}</db:sql>
+    <db:result>{$name}</db:result>
+  </db:query>
+
+  <db:query name="getUserName2" connection="c2">
+    <db:param name="userId" type="Number"/>
+    <db:sql dialect="foo">select 'foo' as name from users where id = {$userId}</db:sql>
+    <db:sql dialect="bar">select 'bar' as name from users where id = {$userId}</db:sql>
+    <db:sql dialect="foobar">select 'foobar' as name from users where id = {$userId}</db:sql>
+    <db:sql>select 'fubar' as name from users where id = {$userId}</db:sql>
+    <db:result>{$name}</db:result>
+  </db:query>
+
+  <db:query name="getUserName3" connection="c2">
+    <db:param name="userId" type="Number"/>
+    <db:sql dialect="foobar">select 'foobar' as name from users where id = {$userId}</db:sql>
+    <db:sql>select 'fubar' as name from users where id = {$userId}</db:sql>
+    <db:result>{$name}</db:result>
+  </db:query>
+
+  <o:variable name="name1">
+    <db:call query="getUserName1" userId="$user-id"/>
+  </o:variable>
+
+  <o:log msg="name from connection 1: {$name1} (foo)"/>
+
+  <o:variable name="name2">
+    <db:call query="getUserName2" userId="$user-id"/>
+  </o:variable>
+
+  <o:log msg="name from connection 2: {$name2} (bar)"/>
+
+  <o:variable name="name3">
+    <db:call query="getUserName3" userId="$user-id"/>
+  </o:variable>
+
+  <o:log msg="name from connection 3: {$name3} (fubar)"/>
+
+</o:program>

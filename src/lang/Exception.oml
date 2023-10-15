@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<o:type name="Exception" java:class="ExceptionNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    Base type for exceptions.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="reason" java:class="String"/>
+  <o:variable name="nested" java:class="org.oXML.type.Node"/>
+  <o:variable name="location" java:class="org.oXML.xpath.SourceLocator"/>
+<!--  <o:variable name="stackframes" java:class="java.util.List"/> -->
+
+  <o:constructor>
+    <o:param name="other" type="Exception"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      this.reason = other.reason;
+      if(other.nested != null)
+        this.nested = other.nested.copy(deep);
+      this.location = other.location;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public ExceptionNode(String reason, Node nested, org.oXML.xpath.SourceLocator location){
+      this();
+      this.reason = reason;
+      this.nested = nested;
+      this.location = location;
+    }
+
+    public void setLocation(org.oXML.xpath.SourceLocator location){
+      this.location = location;
+    }
+
+    /**
+    * Get a description of this Exception, which is either the Exception reason or the string value of the nested exception.
+    */
+    public String getMessage(){
+      if(reason != null)
+        return reason;
+      if(nested != null)
+        return nested.stringValue();
+      return getType().getName().toString();
+    }
+
+    public String getReason(){
+	return reason;
+    }
+
+    public Node getNested(){
+	return nested;
+    }
+
+    public String toString(){
+	return super.toString()+'&lt;'+reason+", "+nested+'&gt;';
+    }
+  </java:code>
+
+  <o:constructor>
+    <java:code>
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="message"/>
+    <java:code>
+      nested = message;
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="message" type="String"/>
+    <java:code>
+      reason = message.stringValue();
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="message"/>
+    <o:param name="nested"/>
+    <java:code>
+      reason = message.stringValue();
+      this.nested = nested;
+    </java:code>
+  </o:constructor>
+
+  <o:function name="message">
+    <doc:p>Get a message explaining the cause of the exception.</doc:p>
+    <java:code>
+      return new StringNode(getMessage());
+    </java:code>
+  </o:function>
+
+  <o:function name="nested">
+    <doc:p>Get the exception that has been wrapped by this Exception, or an empty Nodeset.</doc:p>
+    <java:code>
+      return nested == null ? NodesetNode.EMPTY_SET : nested;
+    </java:code>
+  </o:function>
+
+  <o:function name="location">
+    <doc:p>Get the source location where this exception occurred, if available.</doc:p>
+    <java:code>
+      if(location == null)
+        return NodesetNode.EMPTY_SET;
+      return new StringNode(location.print());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:type name="Handler">
+	  <o:function name="handle">
+	    <o:param name="exc" type="Exception"/>
+	    <o:do>
+	      <o:assert test="$exc.location() = 'Exception.oml'"/>
+	    </o:do>
+	  </o:function>
+	</o:type>
+	<o:catch handler="Handler()">
+	  <o:throw select="Exception()"/>
+	</o:catch>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <java:code>
+      return new StringNode(getMessage());
+    </java:code>
+  </o:function>
+
+</o:type>
+

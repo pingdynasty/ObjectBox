@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Servlet Redirect usage -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:servlet="http://www.o-xml.com/servlet/">
+  <o:param name="uri" select="'redirected.html'"/>
+  <o:param name="forward" select="false()"/>
+  <o:param name="include" select="false()"/>
+  <o:param name="error" select="false()"/>
+
+  <o:import href="lib/servlet.oml"/>
+
+  <o:choose>
+    <o:when test="$forward">
+      <o:return select="servlet:Forward($uri)"/>
+    </o:when>
+    <o:when test="$include">
+      <o:return select="servlet:Include($uri)"/>
+    </o:when>
+    <o:when test="$error">
+      <o:return select="servlet:Error(404, $uri)"/>
+    </o:when>
+    <o:otherwise>
+      <o:return select="servlet:Redirect($uri)"/>
+    </o:otherwise>
+  </o:choose>
+
+</o:program>

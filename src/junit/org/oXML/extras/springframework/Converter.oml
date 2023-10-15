@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<o:do xmlns:o="http://www.o-xml.org/lang/"
+           xmlns:java="http://www.o-xml.com/java/"
+           xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+  <!-- sample o:XML bean that implements the Java Converter interface -->
+
+  <o:type name="Converter">
+    <!-- simple converter that changes one namespace URI to another -->
+
+    <o:variable name="from-ns"/>
+    <o:variable name="to-ns"/>
+
+    <o:constructor>
+      <o:param name="from-ns"/>
+      <o:param name="to-ns"/>
+      <o:do/>
+    </o:constructor>
+
+    <o:function name="convert">
+      <o:param name="input"/>
+      <o:do>
+        <o:if test="not($input//*.name().namespace() = $from-ns)">
+          <o:throw select="'Invalid test input'"/>
+        </o:if>
+        <o:do select="$input//*[namespace-uri(.) = $from-ns].name(Name(local-name(.), $to-ns))"/>
+        <o:return select="$input"/>
+      </o:do>
+    </o:function>
+
+    <ut:test>
+      <!-- we contain our own testcase -->
+      <ut:definition>
+        <o:variable name="input">
+          <test:data xmlns:test="urn:old:namespace">
+            <test:item>value</test:item>
+          </test:data>
+        </o:variable>
+        <o:log msg="lello"/>
+        <o:set converter="Converter('urn:old:namespace', 'urn:new:namespace')"/>
+        <o:set result="$converter.convert($input)"/>
+        <o:log select="$result"/>
+        <o:assert test="not($result//*.name().namespace() != 'urn:new:namespace')"/>
+      </ut:definition>
+    </ut:test>
+  </o:type>
+
+  <o:return select="Converter('urn:old:namespace', 'urn:new:namespace')"/>
+
+</o:do>

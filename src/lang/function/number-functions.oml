@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<o:do name="number-functions" 
+      xmlns:o="http://www.o-xml.org/lang/"
+      xmlns:java="http://www.o-xml.org/java"
+      xmlns:ut="http://www.o-xml.org/namespace/unit-test/" 
+      xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:function name="ceiling">
+    <o:param name="value"/>
+    <doc:p>
+ * Function: number ceiling(number)
+ * Returns the smallest (closest to negative infinity) double value that is not
+ * less than the argument and is equal to a mathematical integer.
+  </doc:p>
+    <java:code>
+   double arg = value.numberValue();
+   return new NumberNode(Math.ceil(arg));
+  </java:code>
+  </o:function>
+
+
+  <o:function name="floor">
+    <o:param name="value"/>
+    <doc:p>
+ * Function: number ceiling(number)
+ * Returns the smallest (closest to negative infinity) double value that is not
+ * less than the argument and is equal to a mathematical integer.
+  </doc:p>
+    <java:code>
+   double arg = value.numberValue();
+   return new NumberNode(Math.floor(arg));
+  </java:code>
+  </o:function>
+
+
+  <o:function name="number">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>get the number value of a node.</doc:p>
+    <doc:p> 
+    * Function: number number(object?)
+    * The number function converts its argument to a number.
+  </doc:p>
+    <java:code>
+    Node value = ctxt.getContextNode();
+    return new NumberNode(value.numberValue());
+  </java:code>
+  </o:function>
+
+
+  <o:function name="number">
+    <o:param name="value"/>
+    <doc:p>get the number value of a node.</doc:p>
+    <doc:p> 
+    * Function: number number(object?)
+    * The number function converts its argument to a number.
+  </doc:p>
+    <java:code>
+    return new NumberNode(value.numberValue());
+  </java:code>
+  </o:function>
+
+
+  <o:function name="round">
+    <o:param name="value"/>
+    <doc:p>
+ * Function: number round(number)
+ * Returns the closest integer to the argument.
+ * If the argument is negative infinity or any value less than or equal to the
+ * value of Long.MIN_VALUE, the result is equal to the value of Long.MIN_VALUE.
+ * If the argument is positive infinity or any value greater than or equal to
+ * the value of Long.MAX_VALUE, the result is equal to the value of 
+ * Long.MAX_VALUE.
+  </doc:p>
+    <java:code>
+   double arg = value.numberValue();
+   return new NumberNode(Math.floor(arg + 0.5));
+  </java:code>
+  </o:function>
+
+
+  <o:function name="sum">
+    <o:param name="value"/>
+    <doc:p>
+ * Function: number sum(node-set)
+ * The sum function returns the sum, for each node in the argument node-set, 
+ * of the result of converting the string-values of the node to a number.
+  </doc:p>
+    <java:code>
+        double result = 0.0;
+        Nodeset set = value.getChildNodes();
+        for(int i=0; i&lt;set.size(); ++i){
+            String val = set.getNode(i).stringValue();
+            result += StringNode.numberValue(val);
+        }
+        return new NumberNode(result);
+  </java:code>
+  </o:function>
+
+  <o:function name="format-number">
+    <o:param name="num"/>
+    <o:param name="pattern"/>
+    <doc:p>Format the given number according to <doc:param name="pattern"/>.</doc:p>
+    <doc:same>number($num).format($pattern)</doc:same>
+    <java:code>
+      java.text.DecimalFormat format = 
+          new java.text.DecimalFormat(pattern.stringValue());
+      return new StringNode(format.format(num.numberValue()));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="format-number(123456, '##0.#####E0')"/>
+      </ut:definition>
+      <ut:result>123.456E3</ut:result>
+    </ut:test>
+  </o:function>
+
+</o:do>

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/">
+  <o:function name="ex:replace">
+    <o:param name="data" type="String"/>
+    <o:param name="from" type="String"/>
+    <o:param name="to"/>
+    <o:do>
+      <o:log msg="data: {$data} from: {$from}"/>
+      <o:while test="contains($data, $from)">
+        <o:eval select="substring-before($data, $from)"/><o:eval select="$to"/>
+        <o:variable name="data" select="substring-after($data, $from)"/>
+        <o:log msg="data: {$data} to: {$to}"/>
+        <o:log><o:eval select="$to"/></o:log>
+      </o:while>
+      <o:eval select="$data"/>
+    </o:do>
+  </o:function>
+
+  <o:variable name="bold" select="'bolder'"/>
+  <o:variable name="bold"><b>place</b></o:variable>
+
+  <o:eval select="ex:replace('there is no place like the home place or any other place', 'place', $bold)"/>
+
+</program>

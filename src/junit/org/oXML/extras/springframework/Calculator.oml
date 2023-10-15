@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <!-- sample o:XML bean that implements (implicitly) the Calculator interface -->
+
+  <o:type name="Calculator">
+    
+    <o:function name="add">
+      <o:param name="x"/>
+      <o:param name="y"/>
+      <o:do>
+        <o:return select="$x + $y"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:return select="Calculator()"/>
+</o:program>

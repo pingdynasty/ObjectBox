@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			 xmlns:lang="http://www.springframework.org/schema/lang"
+			 xmlns:script="http://www.o-xml.org/namespace/spring/"
+                         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd http://www.o-xml.org/namespace/spring/ http://www.o-xml.org/namespace/spring/spring.xsd">
+
+	<script:oxml id="messenger" script-interfaces="org.oXML.extras.springframework.Messenger"
+                   script-source="classpath:org/oXML/extras/springframework/Messenger.oml">
+          <lang:property name="message" value="Hello o:XML!"/>
+	</script:oxml>
+
+	<script:oxml id="calculator" script-interfaces="org.oXML.extras.springframework.Calculator">
+		<lang:inline-script><![CDATA[
+<o:do xmlns:o="http://www.o-xml.org/lang/">
+  <o:type name="oXMLCalculator">
+    <o:function name="add">
+      <o:param name="x"/>
+      <o:param name="y"/>
+      <o:do><o:return select="$x + $y"/></o:do>
+    </o:function>
+  </o:type>
+  <o:return select="oXMLCalculator()"/>
+</o:do>
+                ]]></lang:inline-script>
+                
+	</script:oxml>
+
+	<script:oxml id="refreshableMessenger" script-interfaces="org.oXML.extras.springframework.Messenger"
+							script-source="classpath:org/oXML/extras/springframework/Messenger.oml" refresh-check-delay="5000">
+          <lang:property name="message" value="Hello o:XML!"/>
+        </script:oxml>
+</beans>

@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!-- simple example that demonstrates parts of the ObjectBox Java Language -->
+<!-- Extensions, including resloving Java classes, accessing static class -->
+<!-- fields and object instantiation through class constructors. -->
+<program xmlns:o="http://www.o-xml.org/lang/"
+   xmlns:ex="http://www.o-xml.com/examples/" 
+   xmlns:java="http://www.o-xml.com/java/"
+   xmlns:java-lang="http://www.o-xml.com/java/java.lang"
+   xmlns:System="http://www.o-xml.com/java/java.lang.System"
+   xmlns:Arrays="http://www.o-xml.com/java/java.util.Array">
+
+  <!-- define a procedure that takes one argument -->
+  <!-- and prints it on the Java System.err stream -->
+  <o:procedure name="ex:log">
+    <o:param name="msg"/>
+    <o:do>
+      <java:resolve classname="java.lang.System"/>
+      <!-- java:resolve will put all fields that are both public and static as -->
+      <!-- variables in the namespace 'http://www.o-xml.com/java/java.lang.System'. -->
+      <!-- here '$System.err refers to the field 'err in java.lang.System -->
+      <o:do select="$System:err.println($msg)"/>
+    </o:do>
+  </o:procedure>
+
+  <ex:log msg="'hello!'"/>
+
+  <java:resolve classname="java.lang.StringBuffer"/>
+  <!-- all public constructors are made available as functions in the namespace -->
+  <!-- containing the package name, ie 'http://www.o-xml.com/java/java.lang' -->
+  <o:variable name="buf" select="java-lang:StringBuffer('tautology: ')"/>
+
+  <!-- o:XML basic types (String, Number, Boolean) are converted to Java objects -->
+  <o:do select="$buf.append(1)"/>
+  <o:do select="$buf.append('|')"/>
+  <o:do select="$buf.append(0)"/>
+  <o:do select="$buf.append('=')"/>
+  <o:do select="$buf.append(true())"/>
+
+  <!-- call our log procedure -->
+  <ex:log msg="$buf.toString()"/>
+
+  <!-- turn the String into an array, then sort it using the static Java -->
+  <!-- method java.util.Arrays.sort(char[] array) -->
+  <java:resolve classname="java.util.Arrays"/>
+  <o:do select="Arrays:sort($buf.toString().toCharArray())"/>
+
+  <!-- call our log procedure again with the sorted character array -->
+  <ex:log msg="$buf"/>
+
+</program>

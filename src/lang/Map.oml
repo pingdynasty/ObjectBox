@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<o:type name="Map" java:class="MapNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p><doc:type/> provides a fast lookup data storage that uses a hashing algorithm to store and retrieve keys.</doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="map" java:class="java.util.Map"/>
+
+  <o:constructor>
+    <o:param name="other" type="Map"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      map = new java.util.HashMap();
+      // tbd deep copy
+      map.putAll(other.map);
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    class Key {
+      public Node node;
+      public Key(Node node){
+        this.node = node;
+      }
+      public Node getNode(){
+        return node;
+      }
+      public boolean equals(Object other){
+        return toString().equals(other.toString());
+      }
+      public int hashCode(){
+        return toString().hashCode();
+      }
+      public String toString(){
+        return node.stringValue();
+      }
+    }
+  </java:code>
+
+  <ut:dataset name="values">
+    <item>
+      <key1/>
+      <value1/>
+    </item>
+    <item>
+      <key2/>
+      <value2/>
+    </item>
+    <item>
+      <key3/>
+      <value3/>      
+    </item>
+  </ut:dataset>
+
+  <o:constructor>
+    <doc:p>
+      Create a new, empty map.
+    </doc:p>
+    <java:code>
+      map = new java.util.HashMap();
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Map().size()"/>
+      </ut:definition>
+      <ut:result>0</ut:result>
+    </ut:test>
+  </o:constructor>
+
+  <o:function name="put">
+    <o:param name="key"/>
+    <o:param name="value"/>
+    <doc:p>
+      Add an entry to the map.
+    </doc:p>
+    <doc:return>The Map that the function was invoked on.</doc:return>
+    <java:code>
+      map.put(new Key(key), value);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set map="Map()"/>
+	<o:do select="$map.put('key', 'old value')"/>
+	<o:do select="$map.put('key', 'the new value')"/>
+	<o:return select="$map.get('key')"/>
+      </ut:definition>
+      <ut:result>the new value</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="get">
+    <o:param name="key"/>
+    <doc:p>
+      Get an entry from the map.
+    </doc:p>
+    <doc:return>
+      The value stored in the map under this key, or an empty nodeset if none.
+    </doc:return>
+    <java:code>
+      Node value = (Node)map.get(new Key(key));
+      return value == null ? NodesetNode.EMPTY_SET : value;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set map="Map()"/>
+        <o:do select="$map.put('key1', 'value1')"/>
+        <o:do select="$map.put('key2', 'value2')"/>
+        <o:return select="$map.get('key1')"/>
+      </ut:definition>
+      <ut:result>value1</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="remove">
+    <o:param name="key"/>
+    <doc:p>
+      Remove an entry from the map.
+    </doc:p>
+    <doc:return>
+      The value stored in the map under this key, or an empty nodeset if none.
+    </doc:return>
+    <java:code>
+      Node value = (Node)map.remove(new Key(key));
+      return value == null ? NodesetNode.EMPTY_SET : value;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set map="Map().put('key1', 'value1')"/>
+        <o:do select="$map.put('key2', 'value2')"/>
+        <o:set value="$map.remove('key1')"/>
+        <o:assert test="not($map.get('key1'))" msg="value not removed"/>
+        <o:return select="$value"/>
+      </ut:definition>
+      <ut:result>value1</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="size">
+    <doc:p>Get the number of key/value pairs in this <doc:type/>.</doc:p>
+    <java:code>
+      return new NumberNode(map.size());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set map="Map().put('key1', 'value1')"/>
+        <o:do select="$map.put('key2', 'value2')"/>
+        <o:do select="$map.put('key3', 'value3')"/>
+        <o:do select="$map.put('key2', 'value4')"/>
+        <o:return select="$map.size()"/>
+      </ut:definition>
+      <ut:result>3</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="keys">
+    <doc:p>
+      Get the keys contained in this map
+    </doc:p>
+    <java:code>
+      Nodeset set = new org.oXML.xpath.iterator.DynamicNodeset();
+      java.util.Iterator it = map.keySet().iterator();
+      while(it.hasNext()){
+        Key key = (Key)it.next();
+        set.addNode(key.getNode());
+      }
+      return new NodesetNode(set);
+    </java:code>
+  </o:function>
+
+  <o:function name="values">
+    <doc:p>
+      Get the values contained in this map
+    </doc:p>
+    <java:code>
+      return new NodesetNode(new org.oXML.xpath.iterator.DynamicNodeset(map.values()));
+    </java:code>
+  </o:function>
+
+  <o:function name="nodes">
+    <doc:p>
+      Get the values contained in this map
+    </doc:p>
+    <java:code>
+      return new NodesetNode(new org.oXML.xpath.iterator.DynamicNodeset(map.values()));
+    </java:code>
+  </o:function>
+
+</o:type>

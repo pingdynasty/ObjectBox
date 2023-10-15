@@ -1,0 +1,11 @@
+better variable scoping:
+  <o:variable> always declares a new variable, shadows any others
+  <o:set> changes value of variable - reassignment
+
+regression testing
+
+automated test suite for xpath/opath
+
+test suite for basic o:XML functionality
+
+

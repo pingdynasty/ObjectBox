@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<o:type name="Parameter"
+  xmlns:o="http://www.o-xml.org/lang/">
+
+  <java classname="ParameterNode" extends="ElementNode">
+    private Type type;
+    private Node value;
+    private boolean bound = false;
+
+    public ParameterNode(Type type){
+      super(this, new Name("param"));
+      this.type = type;
+      setAttribute(new Name("type"), type.getName().toString());
+    //      setAttribute("bound", "false");
+    }
+
+    public ParameterNode(ParameterNode other, boolean deep){
+      super(other, deep);
+      type = other.type;
+      value = other.value;
+      bound = other.bound;
+    }
+
+    <!--
+    public ParameterNode(Name type){
+      super(this, new Name("parameter"));
+      setAttribute(new Name("type"), type.toString());
+    }
+    -->
+    public Node getParameterValue(){
+      return value;
+    }
+
+    public boolean bound(){
+      return bound;
+    }
+    <!--
+    public void clear(){
+      bound = false;
+      value = null;
+    }
+         -->
+    public void bind(Node value)
+      throws FunctionException {
+      if(bound)
+        throw new FunctionException("parameter already bound: "+value.stringValue());
+
+      if(value.getType().instanceOf(type)){
+        this.value = value;
+        bound = true;
+      }else{
+        throw new FunctionException("wrong parameter type: "+value.getType());
+      }
+    }
+
+    public Node copy(boolean deep){
+      return new ParameterNode(this, deep);
+    }
+  </java>
+
+  <o:parent name="Element"/>
+  <!--
+  <o:function name="Parameter">
+    <o:param name="name" type="Name"/>
+    <java>
+      return new ParameterNode(name.getName());
+    </java>
+  </o:function>
+
+  <o:function name="Parameter">
+    <o:param name="name"/>
+    <java>
+      return new ParameterNode(new Name(name.stringValue()));
+    </java>
+  </o:function>
+-->
+  <o:function name="get">
+    <java>
+      return target.getParameterValue();
+    </java>
+  </o:function>
+
+  <o:function name="set">
+    <o:param name="value"/>
+    <java>
+      target.bind(value);
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="bind">
+    <o:param name="arg"/>
+    <java>
+      FunctionNode fun = (FunctionNode)target.getParent();
+      if(fun == null)
+        return NodesetNode.EMPTY_SET;
+      return fun.bind(target, arg);
+    </java>
+  </o:function>
+
+</o:type>
+

@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!-- test assertions and exceptions -->
+<!-- invoke with:
+     run.sh examples/throw.oml
+     run.sh examples/throw.oml -Dvar=gogo
+     run.sh examples/throw.oml -Dvar=go
+-->
+<o:program xmlns:o="http://www.o-xml.org/lang/" xmlns:m="http://www.o-xml.com/mine">
+  <o:param name="var"/>
+
+  <o:type name="Handler">
+    <o:variable name="name"/>
+
+    <o:function name="Handler">
+      <o:param name="name"/>
+      <o:do/>
+    </o:function>
+
+    <o:function name="handle">
+      <o:param name="exc"/>
+      <o:do>
+        <exception>
+          <o:eval select="$name"/> caught exception: <o:eval select="$exc.string()"/>
+        </exception>
+      </o:do>
+    </o:function>
+
+    <o:function name="handle">
+      <o:param name="exc" type="String"/>
+      <o:do>
+        <o:log>
+          <o:eval select="$name"/> caught a string: <o:eval select="$exc"/>
+        </o:log>
+        <o:throw select="Exception('ho de ho')"/>
+      </o:do>
+    </o:function>
+
+  </o:type>
+
+  <o:catch handler="Handler('outside')">
+    <o:catch exceptions="String, Boolean, Number" handler="Handler('inside')">
+
+      <o:assert test="$var='go'"/>
+
+      mixed content
+      <o:throw select="'yoyo de ho de lo'"/>
+      after the war
+      <o:log msg="goodbye"/>
+    </o:catch>
+  </o:catch>
+
+</o:program>

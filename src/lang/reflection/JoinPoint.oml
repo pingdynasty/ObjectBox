@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<o:type name="JoinPoint"
+  xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:comment>
+    Function.join(Function) : JoinPoint
+    Procedure.join(Procedure) : JoinPoint
+  </o:comment>
+
+  <o:parent name="Node"/>
+
+  <java classname="JoinPointNode" extends="AbstractNode">
+    public JoinPointNode(){
+      super(TYPE);
+    }
+
+    public JoinPointNode(JoinPointNode other, boolean deep){
+      super(other, deep);
+    }
+
+    public Node copy(boolean deep){
+      return new JoinPointNode(this, deep);
+    }
+  </java>
+
+  <o:function name="function">
+    : Function
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="join">
+    <o:param name="parameter" type="Variable"/>
+    <o:param name="argument" type="Variable"/>
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="before">
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="after">
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="instead">
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="throws">
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="returns">
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <o:function name="when">
+    : String 'before' | 'after' | 'instead' | 'throws' | 'returns'
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+</o:type>
+

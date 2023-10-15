@@ -1,0 +1,315 @@
+<?xml version="1.0"?>
+<o:do name="nodeset-functions" 
+      xmlns:o="http://www.o-xml.org/lang/"
+      xmlns:java="http://www.o-xml.org/java"
+      xmlns:ut="http://www.o-xml.org/namespace/unit-test/" 
+      xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:function name="count">
+    <o:param name="value"/>
+    <doc:p>
+ * Number count(node-set)
+  </doc:p>
+    <java:code>
+    Nodeset set = value.getChildNodes();
+    return new NumberNode(new Integer(set.size()));
+  </java:code>
+  </o:function>
+
+
+  <o:function name="current">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+ * Node current()
+  </doc:p>
+    <java:code>
+   return ctxt.getContextNode();
+  </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:assert test="current()"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+
+  <o:function name="id" java:throws="ObjectBoxException">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <o:param name="value"/>
+    <doc:p>
+ * Function: node-set id(object)
+  </doc:p>
+    <java:code>
+      org.oXML.xpath.iterator.DynamicNodeset result = 
+          new org.oXML.xpath.iterator.DynamicNodeset();
+      String id = value.stringValue();
+      result.addNodeset(getNodesForID(id, ctxt));
+      return new NodesetNode(result);
+    }
+
+    private static final Name varName = new Name("IDFunction-id");
+    private static final String searchExpression = 
+    "//*[@id=$"+varName.getLocalName()+"]";
+    private static org.oXML.xpath.Expression xpath;
+    static{
+        org.oXML.xpath.parser.Parser parser = new org.oXML.xpath.parser.ExpressionParser();
+        try{
+            xpath = parser.parse(searchExpression);
+        }catch(org.oXML.xpath.parser.ParserException exc){
+            Log.exception(exc);
+        }
+    }
+
+    private static Nodeset getNodesForID(String id, RuntimeContext ctxt)
+        throws ObjectBoxException{
+        // tbd save context variable 'id' value
+        // tbd or create a new context and set the context nodeset
+        ctxt.setVariable(varName, new StringNode(id));
+        return xpath.evaluate(ctxt).getChildNodes();
+</java:code>
+  </o:function>
+
+
+  <o:function name="lang">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <o:param name="value"/>
+    <doc:p>
+ * Function: boolean lang(string)
+  </doc:p>
+    <java:code>
+        String testLang = value.stringValue();
+        String ctxtLang = null;
+        for(Node n=ctxt.getContextNode(); n!=null; n=n.getParent()){
+            ctxtLang = getLang(n);
+            if(ctxtLang != null){
+                if(ctxtLang.equalsIgnoreCase(testLang))
+                    return BooleanNode.booleanNode(true);
+                else
+                    return BooleanNode.booleanNode(false);
+            }
+        }
+	return BooleanNode.booleanNode(false);
+    }
+
+    private static String getLang(Node node)
+    {
+        if(!node.getType().instanceOf(ElementNode.TYPE))
+            return null;
+
+        Name xmlLang = new Name("xml:lang"); //tbd FIXME!
+	String lang = node.getAttributeValue(xmlLang);
+        if(lang == null)
+            return null;
+
+        int pos = lang.indexOf('-');
+        if(pos != -1)
+            lang = lang.substring(0, pos);
+        return lang;
+  </java:code>
+  </o:function>
+
+  <o:function name="last">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+    Number last()
+    Returns the index number of the last node in the current context node-set.
+  </doc:p>
+    <doc:example>
+    child::*[position() = last()-1] selects the penultimate child element of the context node.
+  </doc:example>
+    <java:code>
+   Number size = new Integer(ctxt.getContextSize());
+   return new NumberNode(size);
+  </java:code>
+  </o:function>
+
+  <o:function name="local-name">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+ * Function: string local-name(node-set?)
+  </doc:p>
+    <java:code>
+    Node node = ctxt.getContextNode();
+    if(node.getType().instanceOf(NodesetNode.TYPE))
+      node = node.getChildNodes().getNode(0);
+    if(node == null)
+      return null;
+    Name name = node.getName();
+    return new StringNode(name == null ? "" : name.getLocalName());
+  </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:for-each select="$input">
+	  <o:return select="local-name()"/>
+	</o:for-each>
+      </ut:definition>
+      <ut:input><ns:local-name xmlns:ns="urn:namespace"/></ut:input>
+      <ut:result>local-name</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="local-name">
+    <o:param name="node"/>
+    <doc:p>
+ * Function: string local-name(node-set?)
+    </doc:p>
+    <java:code>
+      Name name = node.getName();
+      return new StringNode(name == null ? "" : name.getLocalName());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:return select="local-name(Element('element-name'))"/>
+      </ut:definition>
+      <ut:result>element-name</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+	<o:return select="local-name(Element('urn:namespace', 'element-name'))"/>
+      </ut:definition>
+      <ut:result>element-name</ut:result>
+    </ut:test>
+  </o:function>
+
+
+  <o:function name="name">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+ * Function: string name(node-set?)
+    </doc:p>
+    <java:code>
+      Node node = ctxt.getContextNode();
+      if(node.getType().instanceOf(NodesetNode.TYPE))
+        node = node.getChildNodes().getNode(0);
+      if(node == null)
+        return null;
+      Name name = node.getName();
+      return new StringNode(name == null ? "" : name.toString());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:for-each select="$input">
+	  <o:return select="name()"/>
+	</o:for-each>
+      </ut:definition>
+      <ut:input><element-name/></ut:input>
+      <ut:result>element-name</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="name">
+    <o:param name="value"/>
+    <doc:p>
+      * Function: string name(node-set?)
+    </doc:p>
+    <java:code>
+      Name name = value.getName();
+      return new StringNode(name == null ? "" : name.toString());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:return select="name(Element('element-name'))"/>
+      </ut:definition>
+      <ut:result>element-name</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="namespace-uri">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+      * Function: string namespace-uri(node-set?)
+    </doc:p>
+    <java:code>
+      Node node = ctxt.getContextNode();
+      if(node.getType().instanceOf(NodesetNode.TYPE))
+        node = node.getChildNodes().getNode(0);
+      if(node == null)
+        return null;
+      Name name = node.getName();
+      if(name != null)
+        return new StringNode(name.getNamespaceURI());
+      return new StringNode("");
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:for-each select="$input">
+	  <o:return select="namespace-uri()"/>
+	</o:for-each>
+      </ut:definition>
+      <ut:input><ns:local-name xmlns:ns="urn:namespace"/></ut:input>
+      <ut:result>urn:namespace</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="namespace-uri">
+    <o:param name="value"/>
+    <doc:p>
+      * Function: string namespace-uri(node-set?)
+    </doc:p>
+    <java:code>
+      Name name = value.getName();
+      if(name != null)
+        return new StringNode(name.getNamespaceURI());
+      return new StringNode("");
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:return select="namespace-uri(Element('urn:namespace', 'element-name'))"/>
+      </ut:definition>
+      <ut:result>urn:namespace</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="position">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+ * Function: number position()
+ * The position function returns a number equal to the context position
+ * from the expression evaluation context.
+  </doc:p>
+    <java:code>
+   Number pos = new Integer(ctxt.getContextPosition());
+   return new NumberNode(pos);
+  </java:code>
+  </o:function>
+
+  <o:function name="unique">
+    <o:param name="nodes" type="Nodeset"/>
+    <doc:p>
+      Returns a set of unique nodes based on their individual string values.
+    </doc:p>
+    <java:code>
+      java.util.Set set = new java.util.HashSet();
+      Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+      NodeIterator from = nodes.getChildNodes().getIterator();
+      for(Node n = from.nextNode(); n != null;
+        n = from.nextNode()){
+        String val = n.stringValue();
+        if(!set.contains(val)){
+          set.add(val);
+          result.addNode(n);
+        }
+      }
+      // no equals function ??
+      // Node.same(Node)
+      // Node.identical(Node)
+      return new NodesetNode(result);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:variable name="set">
+          <node>one</node>
+          <node>two</node>
+          <node>one</node>
+          <node>two</node>
+          <node>three</node>
+        </o:variable>
+        <o:assert test="count($set) = 5"/>
+        <o:assert test="count(unique($set)) = 3"/>
+        <o:return select="unique($set)/node[3]"/>
+      </ut:definition>
+      <ut:result>three</ut:result>
+    </ut:test>
+  </o:function>
+
+</o:do>

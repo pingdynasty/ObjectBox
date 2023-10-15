@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ut:suite xmlns:ut="http://www.o-xml.org/namespace/unit-test/"
+          xmlns:o="http://www.o-xml.org/lang/"
+	  xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:type name="TypeWithGeneratedConstructor">
+    <o:variable name="foo" select="'default value'"/>
+    <o:function name="GetFoo">
+      <o:do><o:return select="$foo"/></o:do>
+    </o:function>      
+  </o:type>
+
+  <o:type name="ElementType">
+    <o:parent name="Element"/>
+    <o:variable name="foo" select="'default foo'"/>
+    <o:variable name="bar" select="'default bar'"/>
+    <o:constructor>
+      <o:parent name="Element" select="Element('ElementType')"/>
+      <o:do/>
+    </o:constructor>
+    <o:function name="GetFoo">
+      <o:do><o:return select="$foo"/></o:do>
+    </o:function>      
+  </o:type>
+
+  <o:type name="SubElementType">
+    <o:parent name="ElementType"/>
+    <o:variable name="foo" select="'default subfoo'"/>
+    <o:function name="GetFoo">
+      <o:do><o:return select="$foo"/></o:do>
+    </o:function>      
+  </o:type>
+
+  <o:type name="TypeWithDefaultParentInitialiser">
+    <o:parent name="Element" select="Element('TypeWithDefaultParentInitialiser')"/>
+  </o:type>
+
+  <ut:test name="TestGeneratedConstructor">
+    <ut:definition>
+      <o:set instance="TypeWithGeneratedConstructor()"/>
+      <o:assert test="$instance"/>
+      <o:return select="$instance.type()"/>
+    </ut:definition>
+    <ut:result>TypeWithGeneratedConstructor</ut:result>
+  </ut:test>
+
+  <ut:test name="TestDefaultVariableValue">
+    <ut:definition>
+      <o:set instance="TypeWithGeneratedConstructor()"/>
+      <o:return select="$instance.GetFoo()"/>
+    </ut:definition>
+    <ut:result>default value</ut:result>
+  </ut:test>
+
+  <ut:test name="TestDefaultNodesFunction">
+test that nodes() function is only generated for Element (and Nodeset?) subtypes
+    <ut:definition>
+      <o:set instance="TypeWithGeneratedConstructor()"/>
+      <o:assert test="not($instance/node())"/>
+<!--       <o:return select="$instance/node()"/> -->
+    </ut:definition>
+<!--     <ut:result>default value</ut:result> -->
+  </ut:test>
+
+  <ut:test name="TestDefaultElementNodesFunction">
+    <ut:definition>
+      <o:set instance="ElementType()"/>
+      <o:assert test="$instance.name() = 'ElementType'"/>
+      <o:assert test="$instance/foo"/>
+      <o:assert test="$instance/bar"/>
+      <o:return select="$instance/bar/text()"/>
+    </ut:definition>
+    <ut:result>default bar</ut:result>
+  </ut:test>
+
+  <ut:test name="TestOverloadedTypeVariable">
+    <ut:definition>
+      <o:set instance="SubElementType()"/>
+      <o:return select="$instance.GetFoo()"/>
+    </ut:definition>
+    <ut:result>default subfoo</ut:result>
+  </ut:test>
+
+  <ut:test name="TestDefaultParentConstructor">
+    <ut:definition>
+      <o:set instance="SubElementType()"/>
+      <o:assert test="$instance"/>
+      <o:return select="$instance.name()"/>
+    </ut:definition>
+    <ut:result>ElementType</ut:result>
+  </ut:test>
+
+  <ut:test name="TestDefaultParentInitialiser">
+    <ut:definition>
+      <o:set instance="TypeWithDefaultParentInitialiser()"/>
+      <o:return select="$instance.name()"/>
+    </ut:definition>
+    <ut:result>TypeWithDefaultParentInitialiser</ut:result>
+  </ut:test>
+
+</ut:suite>

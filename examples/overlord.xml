@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:m="http://www.o-xml.com/mine">
+  <test/>
+
+  <!-- first define the functions -->
+
+  <o:function name="m:fun">
+    <o:param name="arg" type="Node"/>
+    <o:do>
+      <o:log select="'hello again'"/>
+      <object><o:eval select="$arg"/></object>
+    </o:do>
+  </o:function>
+
+  <o:function name="m:fun">
+    <o:param name="arg" type="String"/>
+    <o:do>
+      <string><o:eval select="$arg"/></string>
+    </o:do>
+  </o:function>
+
+  <o:function name="m:fun">
+    <o:param name="arg" type="Number"/>
+    <o:do>
+      <number><o:eval select="$arg"/></number>
+    </o:do>
+  </o:function>
+
+  <!-- then run the tests -->
+
+  <o:eval select="m:fun(666)"/>
+
+  <o:eval select="m:fun('piece of string')"/>
+
+  <o:variable name="m:arg">
+    <nodeset>
+      <content>string content of node</content>
+    </nodeset>
+  </o:variable>
+
+  <o:log select="'hello'"/>
+  <o:eval select="m:fun($m:arg)"/>
+  <o:log select="'goodbye'"/>
+
+</program>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/"
+	   xmlns:servlet="http://www.o-xml.com/servlet/"
+           xmlns:db="http://www.o-xml.com/db/">
+
+  <db:connection log="true">
+    <db:url>jdbc:mysql://localhost:3306/test</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+    <db:username>test</db:username>
+    <db:password>test</db:password>
+  </db:connection>
+  <!-- test setup: db test, username test, password test
+    create table users(
+	id int primary key auto_increment, 
+        name varchar(80) not null);
+    insert into users(name) values('foobar');
+    insert into users(name) values('afooba');
+    create procedure getusers(IN in_name varchar(20))
+        select * from users where name like concat('%', in_name, '%');
+  -->
+  <db:query name="searchusers">
+    <db:param name="search" type="String"/>
+    <db:sql>
+      call getusers({$search})
+    </db:sql>
+    <db:result>
+      <user userID="{$id}">{$name}</user>
+    </db:result>
+  </db:query>
+
+  <users>
+    <!-- call predefined query -->
+    <db:call query="searchusers" search="''"/>
+
+    <!-- or use a db:execute oneliner -->
+    <db:execute sql="call getusers('foo')"><user userID="{$id}">{$name}</user></db:execute>
+  </users>
+</o:program>

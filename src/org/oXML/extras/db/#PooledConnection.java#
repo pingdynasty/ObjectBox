@@ -1,0 +1,113 @@
+package org.oXML.extras.db;
+
+import java.util.List;
+import java.lang.reflect.Constructor;
+import org.oXML.type.Type;
+import org.oXML.type.Name;
+import org.oXML.engine.template.Template;
+import org.oXML.engine.RuntimeContext;
+import org.oXML.ObjectBoxException;
+import org.oXML.engine.mapping.dom.MappingException;
+import org.oXML.xpath.Expression;
+import org.tagbox.util.Pool;
+import org.tagbox.util.MinMaxPool;
+import org.oXML.util.Log;
+
+public class PooledConnection {
+
+    private Name name;
+    private Expression[] args;
+    private int min;
+    private int max;
+    private int retry;
+
+    private Pool pool;
+
+//     public JdbcConnector(String driver, String url, String user, String passwd, String log)
+    public PooledConnection(
+(String driver, String url, String user, String passwd, String log
+			      int min, int max, int retry){
+	this.driver = driver;
+	this.url = url;
+	this.user = user;
+	this.passwd = passwd;
+	this.log = log;
+
+	this.min = min;
+	this.max = max;
+	this.retry = retry;
+
+    }
+
+public void initialise(String driver, String url, String user, String passwd, String log){
+
+	Constructor ctor;
+	try{
+	    ctor = JdbcConnector.class.getConstructor(new Class[]
+		{String.class, String.class, String.class, String.class, String.class});
+	}catch(NoSuchMethodException exc){
+	    throw new ObjectBoxException("invalid connection: "+name, exc);
+	}
+
+	Object[] args = {driver, url, user, passwd, log};
+
+	MinMaxPool connections = new MinMaxPool(ctor, args);
+	connections.setMinimumFree(min);
+	connections.setMaximumFree(max);
+
+	Connector connector = new ConnectorProxy(connections, retry);
+	dir.setConnector(name, connector);
+}
+
+    public void process(RuntimeContext env)
+        throws ObjectBoxException{
+	
+	ConnectionDirector dir = ConnectionDirector.getInstance();
+	if(dir.hasConnector(name)){
+	    Log.warning("connection already exists: "+name);
+	    return;
+	}
+
+	Constructor ctor;
+	try{
+	    ctor = JdbcConnector.class.getConstructor(new Class[]
+		{String.class, String.class, String.class, String.class, String.class});
+	}catch(NoSuchMethodException exc){
+	    throw new ObjectBoxException("invalid connection: "+name, exc);
+	}
+
+	Object[] args = params(env);
+
+	MinMaxPool connections = new MinMaxPool(ctor, args);
+	connections.setMinimumFree(min);
+	connections.setMaximumFree(max);
+
+	Connector connector = new ConnectorProxy(connections, retry);
+	dir.setConnector(name, connector);
+	Log.trace("set connection: "+name);
+    }
+
+    public String toString(){
+        return getClass().getName()+'<'+name+'>';
+    }
+}
+/*
+    ObjectBox - o:XML compiler and interpretor
+    for more information see http://www.o-xml.org/objectbox
+    Copyright (C) 2002/2003 Martin Klang, Alpha Plus Technology Ltd
+    email: martin at hack.org
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/

@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!-- test preceding, following axis -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" space="ignore">
+
+  <o:variable name="nodes">
+    <level1>
+      <leaf pos="0"/>
+      <level2>
+	<leaf pos="1"/>
+	<level3>
+	  <leaf pos="2"/>
+	  <leaf pos="3"/>
+	</level3>
+	<leaf pos="4"/>
+      </level2>
+      <leaf pos="5"/>
+      <level2>
+	<leaf pos="6"/>
+	<leaf pos="7"/>
+	<level3>
+	  <leaf pos="8"/>
+	</level3>
+	<leaf pos="9"/>
+      </level2>
+      <leaf pos="10"/>
+    </level1>
+    <leaf pos="11"/>
+  </o:variable>
+
+  <o:log msg="leaf count: {count($nodes//leaf)} = 12"/>
+  <o:assert test="count($nodes//leaf) = 12"/>
+
+  <preceding>
+    <o:comment> leaf 9 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 9]"/>
+    <o:comment> preceding 9 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 9]/preceding::leaf"/>
+    <o:comment> other preceding 9 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 9]/ancestor-or-self::*/preceding-sibling::*/descendant-or-self::leaf"/>
+    <o:comment>  leaf 8 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 8]"/>
+    <o:comment>  preceding 8 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 8]/preceding::leaf"/>
+  </preceding>
+
+  <o:for-each name="i" to="12">
+    <o:set count="count($nodes//leaf[@pos = $i]/preceding::leaf)"/>
+    <o:log msg="{$count} = {$i}"/>
+    <o:catch>
+      <o:assert test="$count = $i"
+		msg="{$count} != {$i}"/>
+    </o:catch>
+  </o:for-each>
+
+  <following>
+    <o:comment> leaf 2 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 2]"/>
+    <o:comment> following 2 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 2]/following::leaf"/>
+    <o:comment> other following 2 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 2]/ancestor-or-self::*/following-sibling::*/descendant-or-self::leaf"/>
+    <o:comment> following 0 </o:comment>
+    <o:eval select="$nodes//leaf[@pos = 0]/following::leaf"/>
+  </following>
+
+  <o:log msg="i : {$i}"/>
+  <o:for-each name="i" to="11">
+    <o:log msg="i : {$i}"/>
+    <o:set count="count($nodes//leaf[@pos = $i]/following::leaf)"/>
+    <o:log msg="{$count} = {11 - $i}"/>
+    <o:catch>
+      <o:assert test="$count = 11 - $i"
+		msg="{$count} != {11 - $i}"/>
+    </o:catch>
+  </o:for-each>
+</o:program>

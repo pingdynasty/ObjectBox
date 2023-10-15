@@ -1,0 +1,487 @@
+<?xml version="1.0"?>
+<o:do name="string-functions" xmlns:o="http://www.o-xml.org/lang/"
+	  xmlns:java="http://www.o-xml.org/java"
+	  xmlns:ut="http://www.o-xml.org/namespace/unit-test/" 
+	  xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:function name="concat">
+    <o:param name="values" min="2" max="unbounded"/>
+    <doc:p>
+ * Function: string concat(string, string, string*)
+ * The concat function returns the concatenation of its arguments.
+  </doc:p>
+    <java:code>
+        StringBuffer result = new StringBuffer();
+        for(int i=0; i &lt; values.length; i++)
+            result.append(values[i].stringValue());
+        return new StringNode(result.toString());
+  </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="concat('one', 'and', 'two')"/>
+      </ut:definition>
+      <ut:result>oneandtwo</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="concat">
+    <o:param name="value"/>
+    <doc:p>
+      Function: string concat(nodeset)
+      The concat function returns the concatenation of its arguments.
+    </doc:p>
+    <java:code>
+      StringBuffer result = new StringBuffer();
+      NodeIterator it = value.getChildNodes().getIterator();
+      for(Node n = it.nextNode(); n != null; n = it.nextNode()){
+        result.append(n.stringValue());
+      }
+      return new StringNode(result.toString());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:variable name="set">
+          <o:text>one</o:text>
+          <o:text>two</o:text>
+          <o:text>three</o:text>
+        </o:variable>
+        <o:return select="concat($set)"/>
+      </ut:definition>
+      <ut:result>onetwothree</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="contains">
+    <o:param name="value"/>
+    <o:param name="match"/>
+    <doc:p>
+ * boolean contains(string, string)
+ * The contains function returns true if the first argument string contains
+ * the second argument string, and otherwise false.
+  </doc:p>
+    <java:code>
+        String string1 = value.stringValue();
+        String string2 = match.stringValue();
+        boolean result = string1.indexOf(string2) != -1;
+        return BooleanNode.booleanNode(result);
+  </java:code>
+  </o:function>
+
+  <o:function name="match" java:throws="ObjectBoxException">
+    <o:param name="value"/>
+    <o:param name="pattern"/>
+    <doc:p>
+ * Function: string match(string, string, number?)
+ * performs a regular expression match on the first string
+  </doc:p>
+    <java:code>
+    RegularExpressionNode expr = new RegularExpressionNode(pattern);
+    return expr.match(value);
+  </java:code>
+  </o:function>
+
+  <o:function name="match" java:throws="ObjectBoxException">
+    <o:param name="value"/>
+    <o:param name="pattern"/>
+    <o:param name="limit"/>
+    <doc:p>
+ * Function: string match(string, string, number?)
+ * performs a regular expression match on the first string
+  </doc:p>
+    <java:code>
+    RegularExpressionNode expr = new RegularExpressionNode(pattern);
+    return expr.match(value, limit);
+  </java:code>
+  </o:function>
+
+  <o:function name="matches" java:throws="ObjectBoxException">
+    <o:param name="value"/>
+    <o:param name="pattern"/>
+    <doc:p>
+ * Function: string matches(string, string)
+ * performs a regular expression match on the first string
+ * returns true if the first string matches the expression at least once
+  </doc:p>
+    <doc:same>RegularExpression($pattern).matches($value)</doc:same>
+    <java:code>
+    RegularExpressionNode expr = new RegularExpressionNode(pattern);
+    return expr.matches(value);
+//   String string1 = value.stringValue();
+//   String string2 = pattern.stringValue();
+//   return BooleanNode.booleanNode(string1.matches(string2));
+  </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="matches($input, 'p([iec]){4}')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>true</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="normalize-space">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+ * String normalize-space(String?)
+  </doc:p>
+    <java:code>
+    String WHITESPACE = " \t\n\r";
+    Node value = ctxt.getContextNode();
+    java.util.StringTokenizer st = 
+      new java.util.StringTokenizer(value.stringValue(), WHITESPACE);
+    StringBuffer result = new StringBuffer();
+    while(st.hasMoreTokens()){
+      String string = st.nextToken();
+      if(string != null &amp;&amp; !string.equals (""))
+        result.append(string).append(' ');
+      }
+      return new StringNode(result.toString().trim());
+  </java:code>
+  </o:function>
+
+  <o:function name="normalize-space">
+    <o:param name="value"/>
+    <doc:p>
+ * String normalize-space(String?)
+  </doc:p>
+    <java:code>
+    String WHITESPACE = " \t\n\r";
+    java.util.StringTokenizer st = 
+      new java.util.StringTokenizer(value.stringValue(), WHITESPACE);
+    StringBuffer result = new StringBuffer();
+    while(st.hasMoreTokens()){
+      String string = st.nextToken();
+      if(string != null &amp;&amp; !string.equals (""))
+        result.append(string).append(' ');
+      }
+      return new StringNode(result.toString().trim());
+  </java:code>
+  </o:function>
+
+  <o:function name="split" java:throws="ObjectBoxException">
+    <o:param name="value"/>
+    <o:param name="pattern"/>
+    <doc:p>
+ * Function: string split(string, string, number?)
+ * performs a regular expression split on the first string
+  </doc:p>
+    <java:code>
+    RegularExpressionNode expr = new RegularExpressionNode(pattern);
+    return expr.split(value);
+  </java:code>
+  </o:function>
+
+  <o:function name="split" java:throws="ObjectBoxException">
+    <o:param name="value"/>
+    <o:param name="pattern"/>
+    <o:param name="limit"/>
+    <doc:p>
+ * Function: string split(string, string, number?)
+ * performs a regular expression split on the first string
+  </doc:p>
+    <java:code>
+    RegularExpressionNode expr = new RegularExpressionNode(pattern);
+    return expr.split(value, limit);
+  </java:code>
+  </o:function>
+
+  <o:function name="starts-with">
+    <o:param name="value"/>
+    <o:param name="match"/>
+    <doc:p>
+ * Function: boolean starts-with(string, string)
+ * The starts-with function returns true if the first argument string starts
+ * with the second argument string, and otherwise returns false.
+  </doc:p>
+    <java:code>
+        String string1 = value.stringValue();
+        String string2 = match.stringValue();
+        return BooleanNode.booleanNode(string1.startsWith(string2));
+  </java:code>
+  </o:function>
+
+  <o:function name="ends-with">
+    <o:param name="value"/>
+    <o:param name="match"/>
+    <doc:p>
+ * Function: boolean ends-with(string, string)
+ * The ends-with function returns true if the first argument string ends
+ * with the second argument string, and otherwise returns false.
+  </doc:p>
+    <java:code>
+        String string1 = value.stringValue();
+        String string2 = match.stringValue();
+        return BooleanNode.booleanNode(string1.endsWith(string2));
+  </java:code>
+  <ut:test>
+    <ut:definition>
+      <o:assert test="ends-with('foobar', 'bar')"/>
+      <o:assert test="ends-with(String('foo'), 'foo')"/>
+      <o:assert test="not(ends-with('foob', 'foo'))"/>
+    </ut:definition>
+  </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>get the string value of a node.</doc:p>
+    <java:code>
+    Node value = ctxt.getContextNode();
+    return new StringNode(value.stringValue());
+  </java:code>
+  </o:function>
+
+  <o:function name="string">
+    <o:param name="value"/>
+    <doc:p>get the string value of a node.</doc:p>
+    <java:code>
+    return new StringNode(value.stringValue());
+  </java:code>
+  </o:function>
+
+  <o:function name="string-length">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+ * Function: number string-length(string?)
+    </doc:p>
+    <java:code>
+      Node value = ctxt.getContextNode();
+      return new NumberNode((double)value.stringValue().length());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:for-each select="$input">
+	  <o:return select="string-length()"/>
+	</o:for-each>
+      </ut:definition>
+      <ut:input>long</ut:input>
+      <ut:result>4</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string-length">
+    <o:param name="value"/>
+    <doc:p>
+ * Function: number string-length(string?)
+    </doc:p>
+    <java:code>
+      return new NumberNode((double)value.stringValue().length());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:return select="string-length($input)"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>30</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substitute" java:throws="ObjectBoxException">
+    <o:param name="value"/>
+    <o:param name="pattern"/>
+    <o:param name="substitution"/>
+    <doc:p>
+ * Function: string substitute(string, string, string, number?)
+ * performs a regular expression substitution on the first string
+    </doc:p>
+    <java:code>
+      RegularExpressionNode expr = new RegularExpressionNode(pattern);
+      return expr.substitute(value, substitution);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:return select="substitute($input, 'a*b', '-')"/>
+      </ut:definition>
+      <ut:input>aabfooaabfooabfoob</ut:input>
+      <ut:result>-foo-foo-foo-</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substitute" java:throws="ObjectBoxException">
+    <o:param name="value"/>
+    <o:param name="pattern"/>
+    <o:param name="substitution"/>
+    <o:param name="limit"/>
+    <doc:p>
+ * Function: string substitute(string, string, string, number?)
+ * performs a regular expression substitution on the first string
+  </doc:p>
+    <java:code>
+    RegularExpressionNode expr = new RegularExpressionNode(pattern);
+    return expr.substitute(value, substitution, limit);
+  </java:code>
+  </o:function>
+
+  <o:function name="substring">
+    <o:param name="value"/>
+    <o:param name="from"/>
+    <doc:p>
+ * Function: string substring(string, number, number?)
+ * The substring function returns the substring of the first argument
+ * starting at the position specified in the second argument with length
+ * specified in the third argument. If the third argument is not specified,
+ * it returns the substring starting at the position specified in the second 
+ * argument and continuing to the end of the string.
+  </doc:p>
+    <doc:same>string($value).substring($from)</doc:same>
+    <java:code>
+    String string = value.stringValue();
+    double index = from.numberValue();
+    return new StringNode(StringNode.substring(string, index));
+  </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring($input, 13)"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>a piece of string?</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substring">
+    <o:param name="value"/>
+    <o:param name="from"/>
+    <o:param name="count"/>
+    <doc:p>
+/**
+ * Function: string substring(string, number, number?)
+ * The substring function returns the substring of the first argument
+ * starting at the position specified in the second argument with length
+ * specified in the third argument. If the third argument is not specified,
+ * it returns the substring starting at the position specified in the second 
+ * argument and continuing to the end of the string.
+ */
+  </doc:p>
+    <doc:same>string($value).substring($from, $to)</doc:same>
+    <java:code>
+    String string = value.stringValue();
+    double index1 = from.numberValue();
+    double index2 = count.numberValue();
+    return new StringNode(StringNode.substring(string, index1, index2));
+  </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring($input, 5, 7)"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>long is</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substring-after">
+    <o:param name="value"/>
+    <o:param name="match"/>
+    <doc:p>
+ * Function: string substring-after(string, string)
+ * The substring-after function returns the substring of the first argument 
+ * string that follows the first occurence of the second argument string
+ * in the first argument string, or the empty string if the first argument
+ * string does not contain the second argument string.
+  </doc:p>
+    <java:code>
+        String string1 = value.stringValue();
+        String string2 = match.stringValue();
+        String result = "";
+        int splitIndex = string1.indexOf(string2);
+        if(splitIndex != -1)
+            result = string1.substring(splitIndex + string2.length());
+        return new StringNode(result);
+</java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring-after($input, ' is ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>a piece of string?</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring-after($input, 'is?')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result/>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring-after($input, ' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>long is a piece of string?</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substring-before">
+    <o:param name="value"/>
+    <o:param name="match"/>
+    <doc:p>
+ * Function: string substring-before(string, string)
+ * The substring-before function returns the substring of the first argument 
+ * string that precedes the first occurence of the second argument string
+ * in the first argument string, or the empty string if the first argument
+ * string does not contain the second argument string.
+  </doc:p>
+    <java:code>
+        String string1 = value.stringValue();
+        String string2 = match.stringValue();
+        String result;
+	int pos = string1.indexOf(string2);
+	if(pos == -1)
+	    result = "";
+	else
+	    result = string1.substring(0, pos);
+        return new StringNode(result);
+</java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring-before($input, ' is ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>how long</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring-before($input, 'is?')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result/>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+        <o:return select="substring-before($input, ' ')"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>how</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="translate">
+    <o:param name="value"/>
+    <o:param name="from"/>
+    <o:param name="to"/>
+    <doc:p>
+ * Function: string translate(string, string, string)
+  </doc:p>
+    <java:code>
+        char[] input = value.stringValue().toCharArray();
+        String string1 = from.stringValue();
+        char[] string2 = to.stringValue().toCharArray();
+	
+        // the result (with enough capacity).
+        StringBuffer result = new StringBuffer(input.length);
+
+        for(int i=0; i &lt; input.length; i++){
+            int charIndex = string1.indexOf(input[i]);
+            if (charIndex &lt; 0) {
+                // character not to be replaced at all
+                result.append(input[i]);
+            } else if(charIndex &lt; string2.length) {
+                // character to be replaced with char from 3rd string.
+                result.append(string2[charIndex]);
+            }
+            // character to be removed.
+        }
+        return new StringNode(result.toString());
+  </java:code>
+  </o:function>
+
+</o:do>

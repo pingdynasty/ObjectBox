@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/"> 
+
+    <o:type name="Translator">
+      <o:parent name="Node"/>
+
+      <o:variable name="map"/>
+
+      <o:function name="Translator">
+        <o:param name="map"/>
+        <o:do/>
+      </o:function>
+
+      <o:function name="translate">
+        <o:param name="nodes"/>
+        <o:do>
+          <o:for-each name="text" select="$nodes/*/text()">
+            <o:set translated="$this.translate($text)"/>
+            <o:log msg="{$text} = {$translated}"/>
+            <o:do select="$text.replace($translated)"/>
+          </o:for-each>
+          <o:return select="$nodes"/>
+        </o:do>
+      </o:function>
+
+      <o:function name="translate">
+        <o:param name="text" type="String"/>
+        <o:do>
+          <o:return select="$map/item[from = $text]/to/text()"/>
+        </o:do>
+      </o:function>
+    </o:type>
+
+    <o:variable name="words">
+      <item>
+        <from>here</from>
+        <to>aqui</to>
+      </item>
+      <item>
+        <from>where</from>
+        <to>donde</to>
+      </item>
+      <item>
+        <from>never</from>
+        <to>nunca</to>
+      </item>
+    </o:variable>
+
+    <o:set translator="Translator($words)"/>
+
+    <o:variable name="speak">
+      <line>where</line>
+      <word>never</word>
+      <stop>here</stop>
+    </o:variable>
+
+    <o:eval select="$translator.translate($speak)"/>
+
+    <o:for-each name="text" select="$speak/*/text()">
+      <o:set translated="$translator.translate($text.string())"/>
+      <o:log msg="{$text} = {$translated}"/>
+      <o:do select="$text.replace($translated)"/>
+    </o:for-each>
+
+    <o:eval select="$speak"/>
+
+    <o:log msg="here: {$translator.translate('here')}"/>
+
+    <o:do select="$speak//text().replace('yoyo')"/>
+    <o:eval select="$speak"/>
+
+</program>

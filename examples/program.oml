@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <o:param name="program" type="String"/>
+
+  <o:set program="Program($program, true())"/>
+
+  <o:set result="$program.run()"/>
+  <o:log msg="got: {$result.type()}"/>
+  <o:eval select="$program.run()"/>
+
+</o:program>

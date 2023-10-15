@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<o:type name="DocumentType" java:class="DocumentTypeNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A DocumentType represents an XML doctype.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="name" java:class="String"/>
+  <o:variable name="ents" java:class="java.util.List"/>
+  <o:variable name="nots" java:class="java.util.List"/>
+  <o:variable name="publicId" java:class="String"/>
+  <o:variable name="systemId" java:class="String"/>
+  <o:variable name="internalSubset" java:class="String"/>
+
+  <o:constructor>
+    <o:param name="other" type="DocumentType"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+	 ents = new java.util.ArrayList();
+	 ents.addAll(other.ents); // tbd deep copy
+	 nots = new java.util.ArrayList();
+	 nots.addAll(other.nots); // tbd deep copy
+	 name = other.name;
+	 publicId = other.publicId;
+	 systemId = other.systemId;
+	 internalSubset = other.internalSubset;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public DocumentTypeNode(String name, String publicId, 
+                            String systemId, String internalSubset){
+        this();
+        this.name = name;
+        this.publicId = publicId;
+        this.systemId = systemId;
+        this.internalSubset = internalSubset;  
+        ents = new java.util.ArrayList();
+        nots = new java.util.ArrayList();
+    }
+
+    public String getDocumentTypeName(){
+        return name;
+    }
+
+    public java.util.List getEntities(){
+        return ents;
+    }
+
+    public java.util.List getNotations(){
+        return nots;
+    }
+
+    public String getSystemId(){
+        return systemId;
+    }
+
+    public String getPublicId(){
+        return publicId;
+    }
+
+    public String getInternalSubset(){
+        return internalSubset;
+    }
+
+    public void addNotation(NotationNode notation){
+        nots.add(notation);
+    }
+
+    public void addEntity(EntityNode entity){
+        ents.add(entity);
+    }
+  </java:code>
+
+  <o:constructor>
+    <java:code>
+      ents = new java.util.ArrayList();
+      nots = new java.util.ArrayList();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="entities">
+    <doc:p>Get all declared Entities.</doc:p>
+    <java:code>
+      Nodeset set = new org.oXML.xpath.iterator.DynamicNodeset();
+      java.util.Iterator it = ents.iterator();
+      while(it.hasNext())
+        set.addNode((Node)it.next());
+      return new NodesetNode(set);
+    </java:code>
+  </o:function>
+
+  <o:function name="notations">
+    <doc:p>Get all declared Notations.</doc:p>
+    <java:code>
+      Nodeset set = new org.oXML.xpath.iterator.DynamicNodeset();
+      java.util.Iterator it = nots.iterator();
+      while(it.hasNext())
+        set.addNode((Node)it.next());
+      return new NodesetNode(set);
+    </java:code>
+  </o:function>
+
+  <o:function name="name" type="Name">
+    <doc:p>Get the name of this <doc:type/>.</doc:p>
+    <java:code>
+      return new NameNode(new Name(name));
+    </java:code>
+  </o:function>
+
+</o:type>

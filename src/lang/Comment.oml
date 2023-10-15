@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<o:type name="Comment" java:class="CommentNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A Comment object represents an XML Comment node.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="comment" java:class="String"/>
+
+  <o:constructor>
+    <o:param name="other" type="Comment"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      comment = other.comment;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public CommentNode(String comment){
+        this();
+        this.comment = comment;
+    }
+
+    public String toString(){
+        return super.toString()+'&lt;'+comment+'&gt;';
+    }
+  </java:code>
+
+  <o:constructor>
+    <o:param name="comment"/>
+    <java:code>
+      this.comment = comment.stringValue();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="string">
+    <java:code>
+      return new StringNode(comment);
+    </java:code>
+  </o:function>
+
+</o:type>

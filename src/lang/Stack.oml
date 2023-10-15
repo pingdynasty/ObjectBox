@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<o:type name="Stack" java:class="StackNode"
+        xmlns:o="http://www.o-xml.org/lang/" 
+        xmlns:java="http://www.o-xml.org/java"
+        xmlns:doc="http://www.o-xml.org/namespace/document/"
+        xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+  </doc:p>
+
+  <o:parent name="List"/>
+
+  <java:code>
+    private static final NumberNode ZERO_NUMBER = new NumberNode(0.0);
+  </java:code>
+
+  <o:constructor>
+    <o:param name="other" type="Stack"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code/>
+  </o:constructor>
+
+  <o:constructor>
+    <doc:p>Create a new, empty Stack.</doc:p>
+    <java:code/>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Stack().size()"/>
+      </ut:definition>
+      <ut:result>0</ut:result>
+    </ut:test>
+  </o:constructor>
+
+  <o:function name="push">
+    <o:param name="value"/>
+    <doc:p>Add an entry to the stack.</doc:p>
+    <doc:return>The Stack that the function was invoked on.</doc:return>
+    <java:code>
+      // call List.add(0, value)
+      ListNode list = (ListNode)this.cast(ListNode.TYPE);
+      list.add(ZERO_NUMBER, value);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="Stack().push('one').push('two').push('three')"/>
+        <o:do select="$input.push('a new value')"/>
+        <o:return select="$input.size()"/>
+      </ut:definition>
+      <ut:result>4</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="pop">
+    <doc:p>Get the last item added to the <doc:type/>.</doc:p>
+    <doc:return>
+      The last item in this <doc:type/>, or an empty nodeset if the <doc:type/> is empty.
+    </doc:return>
+    <java:code>
+      // call List.remove(0);
+      // todo: handle stack underflow errors
+      ListNode list = (ListNode)this.cast(ListNode.TYPE);
+      return list.remove(ZERO_NUMBER);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="Stack().push('one').push('two').push('three')"/>
+        <o:assert test="$input.pop() = 'three'"/>
+        <o:return select="$input.pop()"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+
+</o:type>

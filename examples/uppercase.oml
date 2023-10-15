@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/"
+  xmlns:ex="http://www.o-xml.org/examples/">
+
+  <o:procedure name="ex:uppercase">
+    <o:do>
+      <o:for-each name="node" select=".//*">
+        <o:set upper="name($node).upper()"/>
+        <o:do select="$node.name(Name($upper))"/>
+      </o:for-each>
+      <o:eval select="."/>
+    </o:do>
+  </o:procedure>
+
+
+  <ex:uppercase>
+    <table>
+      <tr><td>Text nodes will not be changed.</td></tr>
+      <tr><td>Only element names.</td></tr>
+    </table>
+  </ex:uppercase>
+
+</program>

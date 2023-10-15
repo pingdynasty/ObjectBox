@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Language Extensions -->
+<!-- includes Java class resolution, instantiation and accessing static Java -->
+<!-- methods throught namespaced global o:XML functions -->
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/"
+  xmlns:java="http://www.o-xml.com/java/"
+  xmlns:java-util="http://www.o-xml.com/java/java.util"
+  xmlns:Collections="http://www.o-xml.com/java/java.util.Collections">
+
+  <!-- first resolve the required Java classes -->
+  <java:resolve classname="java.util.List" />
+
+  <!-- define a procedure that iterates through a java.util.List to -->
+  <!-- return its contents -->
+  <o:procedure name="ex:print">
+    <o:param name="list" type="java-util:List"/>
+    <o:do>
+      <o:variable name="it" select="$list.iterator()"/>
+      <o:log msg="it: {$it}"/>
+      <o:while test="$it.hasNext()">
+        <o:eval select="$it.next()"/>
+      </o:while>
+    </o:do>
+  </o:procedure>
+
+  <java:resolve classname="java.util.ArrayList" />
+  <!-- instantiate an ArrayList -->
+  <o:variable name="list" select="java-util:ArrayList()"/>
+
+  <o:do select="$list.add('how')"/>
+  <o:do select="$list.add('long')"/>
+  <o:do select="$list.add('is')"/>
+  <o:do select="$list.add('a')"/>
+  <o:do select="$list.add('piece')"/>
+  <o:do select="$list.add('of')"/>
+  <o:do select="$list.add('string')"/>
+
+  <unsorted>
+    <ex:print list="$list"/>
+  </unsorted>
+
+  <!-- resolve Collections -->
+  <java:resolve classname="java.util.Collections" />
+  <!-- call static method java.util.Collections.sort(List list) -->
+  <o:do select="Collections:sort($list)"/>
+
+  <sorted>
+    <ex:print list="$list"/>
+  </sorted>
+
+</program>

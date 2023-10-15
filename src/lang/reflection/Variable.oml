@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<o:type name="Variable"
+  xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:comment>
+    Program.parameters()
+    Program.parameter(Name)
+    Function.variables()
+    Function.variable(Name)
+    Function.parameters()
+    Function.parameter(Number)
+    Procedure.parameters()
+    Procedure.parameter(Name)
+    JoinPoint.join(Variable param, Variable arg)
+  </o:comment>
+
+  <java classname="VariableNode" extends="ElementNode">
+    private Variable var;
+
+    public VariableNode(Name name){
+      super(this, new Name("variable"));
+      var = new Variable(name, new NodesetNode());
+      setAttribute(new Name("name"), name.toString());
+    }
+
+    public Variable getVariable(){
+      return var;
+    }
+  </java>
+
+  <o:parent name="Element"/>
+
+  <o:function name="Variable">
+    <o:param name="name"/>
+    <java>
+      return new VariableNode(new Name(name.stringValue()));
+    </java>
+  </o:function>
+
+  <o:function name="Variable">
+    <o:param name="name" type="Name"/>
+    <java>
+      return new VariableNode(name.getName());
+    </java>
+  </o:function>
+
+  <o:function name="get">
+    <java>
+      return target.getVariable().getValue();
+    </java>
+  </o:function>
+
+  <o:function name="set">
+    <o:param name="value"/>
+    <java>
+      target.getVariable().setValue(value);
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+</o:type>
+

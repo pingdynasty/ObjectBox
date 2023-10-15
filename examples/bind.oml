@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" >
+
+    <o:set prog="ref:program()" xmlns:ref="http://www.o-xml.org/lang/reflection"/>
+
+    <o:set fun="$prog/type[@name='String']/function[@name='match' and count(param) = 1]"/>
+    
+    <o:eval select="$fun"/>
+
+    <o:log>
+      exceptions:
+      <o:eval select="$prog/type[parent/@name='Exception']"/>
+    </o:log>
+
+    <o:log>
+      <o:eval select="$fun"/>
+    </o:log>
+    <o:set fun="$fun.bind('toktoktok')"/>
+    <o:log>
+      <o:eval select="$fun"/>
+    </o:log>
+
+    <o:set fun="$fun.bind('ok')"/>
+    <o:log>
+      <o:eval select="$fun"/>
+    </o:log>
+
+    <o:eval select="$fun.call()"/>
+    <o:eval select="$fun.call()"/>
+    <o:eval select="$fun.call()"/>
+
+    <o:function name="apply">
+      <o:param name="fun"/>
+      <o:param name="list"/>
+      <o:do>
+        <o:for-each name="node" select="$list">
+          <o:eval select="$fun.call($node)"/>
+        </o:for-each>
+      </o:do>
+    </o:function>
+
+    <o:set fun="$prog/type[@name='String']/function[@name='match' and count(param) = 1]"/>
+    <o:log msg="double bind: {$fun.bind('wabbit wabbit', 'bit').call()}"/>
+    <o:set fun="$fun.bind('wabbit wabbit')"/>
+    <o:variable name="patterns"/>
+    <o:do select="$patterns.add('\w+')"/>
+    <o:do select="$patterns.add('\W+')"/>
+    <o:do select="$patterns.add('[ab]+')"/>
+    <o:for-each select="apply($fun, $patterns)">
+      <match>
+        <o:eval select="."/>
+      </match>
+    </o:for-each>
+
+    <!-- bind the other arg instead -->
+    <o:set fun="$prog/type[@name='String']/function[@name='match' and count(param) = 1]"/>
+    <o:log>
+      uncurried function:
+      <o:eval select="$fun"/>
+      bind parameter:
+      <o:eval select="$fun/function/param"/>
+    </o:log>
+    <o:set fun="$fun/function/param.bind('[ab]+')"/>
+    <o:log>
+      curried function:
+      <o:eval select="$fun"/>
+      unbound parameter:
+      <o:eval select="$fun/function/param"/>
+    </o:log>
+    <o:variable name="patterns"/>
+    <o:do select="$patterns.add('wabba wibbo')"/>
+    <o:do select="$patterns.add('wibbina wibbibabo')"/>
+    <o:do select="$patterns.add('wababa wibababo')"/>
+<!--    <o:for-each select="apply($fun, $patterns)">
+      <pattern>
+        <o:eval select="."/>
+      </pattern>
+    </o:for-each>
+-->
+
+
+    <!-- create a nodeset of numbers -->
+    <o:variable name="numbers"/>
+    <o:do select="$numbers.add(2134)"/>
+    <o:do select="$numbers.add(1324)"/>
+    <o:do select="$numbers.add(2124)"/>
+
+    <!-- get hold of Number.log() -->
+    <o:set log="ref:program()/type[@name='Number']/function[@name='log']"
+      xmlns:ref="http://www.o-xml.org/lang/reflection"/>
+
+    <!-- invoke Number.log() on all the numbers in the nodeset -->
+    <o:set numbers="apply($log, $numbers)"/>
+    <o:for-each select="$numbers">
+      <number>
+        <o:eval select="."/>
+      </number>
+    </o:for-each>
+
+</program>

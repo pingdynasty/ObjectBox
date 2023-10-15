@@ -1,0 +1,262 @@
+<?xml version="1.0"?>
+<o:type name="List" java:class="ListNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="list" java:class="java.util.List"/>
+
+  <o:constructor>
+    <o:param name="other" type="List"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      list = new java.util.ArrayList();
+      if(deep){
+        for(int i=0; i&lt; other.list.size(); ++i){
+          Node node = (Node)other.list.get(i);
+          list.add(node.copy(true));
+        }
+      }else{
+        list.addAll(other.list);
+      }
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+  </java:code>
+
+  <o:constructor>
+    <doc:p>Create a new, empty list.</doc:p>
+    <java:code>
+      list = new java.util.ArrayList();
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="List().size()"/>
+      </ut:definition>
+      <ut:result>0</ut:result>
+    </ut:test>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="nodes"/>
+    <doc:p>Create a new list from a Nodeset or List.</doc:p>
+    <doc:return>A new <doc:type/> containing all the nodes in <doc:param/></doc:return>
+    <java:code>
+      list = new java.util.ArrayList();
+      addAll(nodes);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="List($input).size()"/>
+      </ut:definition>
+      <ut:input ref="element-set"/>
+      <ut:result>3</ut:result>
+    </ut:test>
+  </o:constructor>
+
+  <o:function name="add">
+    <o:param name="value"/>
+    <doc:p>Add an entry to the list.</doc:p>
+    <doc:return>The List that the function was invoked on.</doc:return>
+    <java:code>
+      list.add(value);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="List().add('one').add('two').add('three')"/>
+        <o:do select="$input.add('a new value')"/>
+        <o:return select="$input.size()"/>
+      </ut:definition>
+      <ut:result>4</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="add">
+    <o:param name="position"/>
+    <o:param name="value"/>
+    <doc:p>Add an entry to the list at the given, 0-indexed position.</doc:p>
+    <doc:return>The List that the function was invoked on.</doc:return>
+    <java:code>
+      // what happens if index greater than size() ? or less than 0 ?
+      int pos = (int)position.numberValue();
+      list.add(pos, value);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="List().add('one').add('two').add('three')"/>
+        <o:do select="$input.add(2, 'a new value')"/>
+        <o:return select="$input.size()"/>
+      </ut:definition>
+      <ut:result>4</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="addAll">
+    <o:param name="nodes"/>
+    <doc:p>Add several entries to the list at once.</doc:p>
+    <doc:param name="nodes">0 or more nodes in a Nodeset or List</doc:param>
+    <doc:return>The List that the function was invoked on.</doc:return>
+    <java:code>
+      Nodeset kids = nodes.getChildNodes();
+      for(int i=0; i &lt; kids.size(); ++i)
+          list.add(kids.getNode(i));
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="List().addAll($input).size()"/>
+      </ut:definition>
+      <ut:input ref="element-set"/>
+      <ut:result>3</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+        <o:set list1="List().addAll($input)"/>
+        <o:set list2="List().addAll($list1)"/>
+        <o:return select="$list2.size()"/>
+      </ut:definition>
+      <ut:input ref="element-set"/>
+      <ut:result>3</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="all">
+    <doc:p>Get all entries in the list as a nodeset</doc:p>
+    <doc:p><doc:status>deprecated</doc:status> use List.values() instead</doc:p>
+    <doc:same>$this.values()</doc:same>
+    <java:code>
+      return new NodesetNode(new org.oXML.xpath.iterator.DynamicNodeset(list));
+    </java:code>
+  </o:function>
+
+  <o:function name="values">
+    <doc:p>Get all entries in the list as a nodeset</doc:p>
+    <java:code>
+      return new NodesetNode(new org.oXML.xpath.iterator.DynamicNodeset(list));
+    </java:code>
+  </o:function>
+
+  <o:function name="get">
+    <o:param name="index"/>
+    <doc:p>Get an item from the list.</doc:p>
+    <doc:return>
+      The value stored in the list at this position, or an empty nodeset if none.
+    </doc:return>
+    <java:code>
+      int pos = (int)index.numberValue();
+      if(pos &lt; 0 || pos &gt;= list.size())
+        return NodesetNode.EMPTY_SET;
+      Node value = (Node)list.get(pos);
+      return value == null ? NodesetNode.EMPTY_SET : value;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="List().add('one').add('two').add('three')"/>
+        <o:return select="$input.get(1)"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="last">
+    <doc:p>Get the last item in the list.</doc:p>
+    <doc:return>
+      The last item in the list, or an empty nodeset if none.
+    </doc:return>
+    <java:code>
+      Node value = (Node)list.get(list.size() - 1);
+      return value == null ? NodesetNode.EMPTY_SET : value;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="List().add('one').add('two').add('three')"/>
+        <o:return select="$input.last()"/>
+      </ut:definition>
+      <ut:result>three</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="size">
+    <doc:p>determine the number of items in the list</doc:p>
+    <java:code>
+      return new NumberNode(list.size());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="List().add('one').add('two').add('three')"/>
+        <o:return select="$input.size()"/>
+      </ut:definition>
+      <ut:result>3</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="clear">
+    <doc:p>Clear the list by removing all list items.</doc:p>
+    <doc:return>this list, cleared.</doc:return>
+    <java:code>
+      list.clear();
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set list="List().add('one').add('two').add('three')"/>
+        <o:do select="$list.clear().add('four')"/>
+        <o:return select="$list.values()"/>
+      </ut:definition>
+      <ut:result>four</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="remove">
+    <o:param name="index"/>
+    <doc:p>
+      Remove an entry from the list.
+    </doc:p>
+    <doc:return>
+      The value stored in the list at this position, or an empty nodeset if none.
+    </doc:return>
+    <java:code>
+      int pos = (int)index.numberValue();
+      if(pos &lt; 0 || pos &gt;= list.size())
+        return NodesetNode.EMPTY_SET;
+      Node value = (Node)list.remove(pos);
+      return value == null ? NodesetNode.EMPTY_SET : value;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set input="List().add('one').add('two').add('three')"/>
+        <o:set value="$input.remove(1)"/>
+        <o:assert test="$input.get(1) != 'two'" msg="value not removed"/>
+        <o:return select="$value"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="nodes">
+    <doc:p>Get a Nodeset containing all Nodes in this <doc:type/>.</doc:p>
+    <doc:same>$this.values()</doc:same>
+    <java:code>
+      Nodeset set = new org.oXML.xpath.iterator.DynamicNodeset(list);
+//      for(int i=0; i&lt; list.size(); ++i)
+//        set.addNode((Node)list.get(i));
+      return new NodesetNode(set);
+    </java:code>
+  </o:function>
+
+  <ut:dataset name="element-set">
+    <one/>
+    <two/>
+    <three/>
+  </ut:dataset>
+
+</o:type>

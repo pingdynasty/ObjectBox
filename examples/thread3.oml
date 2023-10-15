@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!-- test inline threads -->
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:function name="sleep">
+    <o:param name="millis"/>
+    <o:do xmlns:java="http://www.o-xml.com/java/">
+      <java:resolve classname="java.lang.Thread"/>
+      <o:do select="Thread:sleep(number($millis))"
+	    xmlns:Thread="http://www.o-xml.com/java/java.lang.Thread"/>
+    </o:do>
+  </o:function>
+
+  <o:function name="stall">
+    <o:param name="times"/>
+    <o:do>
+      <o:for-each to="$times">
+	<o:do select="sleep(10)"/>
+	<o:log msg="stalling {.}"/>
+      </o:for-each>
+    </o:do>
+  </o:function>
+
+  <o:function name="fire-and-forget">
+    <o:do>
+      <o:thread priority="10" daemon="true()">
+	<o:do select="stall(12)"/>
+	<o:return select="'done'"/>
+      </o:thread>
+    </o:do>
+  </o:function>
+
+  <o:set thread="fire-and-forget()"/>
+
+  <o:do select="sleep(5)"/>
+
+  <o:do select="stall(5)"/>
+
+  <result>
+    <o:eval select="$thread.return()"/>
+  </result>
+
+</o:program>

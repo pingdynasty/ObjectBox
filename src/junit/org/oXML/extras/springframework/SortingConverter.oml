@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<o:do xmlns:o="http://www.o-xml.org/lang/"
+           xmlns:java="http://www.o-xml.com/java/"
+           xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+  <!-- sample o:XML bean that implements the Java Converter interface -->
+
+  <o:type name="SortingConverter">
+
+    <o:variable name="sortorder"/>
+
+    <o:constructor>
+      <o:param name="sortorder"/>
+      <o:do/>
+    </o:constructor>
+
+    <o:function name="convert">
+      <o:param name="input"/>
+      <o:do>
+        <data>
+          <o:sort select="string(.)" order="{$sortorder}">
+            <o:eval select="$input/data/item"/>
+          </o:sort>
+        </data>
+      </o:do>
+    </o:function>
+
+    <o:function name="validate">
+      <o:param name="input"/>
+      <o:do>
+        <o:if test="count($input/data/item) &lt; 3">
+          <o:throw select="concat('too short, only ', count($input/data/item), ' nodes')"/>
+        </o:if>
+      </o:do>
+    </o:function>
+
+    <ut:test>
+      <!-- we contain our own testcase -->
+      <ut:input>
+        <data>
+          <item>one</item>
+          <item>two</item>
+          <item>three</item>
+          <item>four</item>
+        </data>
+      </ut:input>
+      <ut:definition>
+        <o:set converter="SortingConverter('ascending')"/>
+        <o:do select="$converter.validate($input)"/>
+        <o:set result="$converter.convert($input)"/>
+        <o:assert test="$result/data/item[1] = 'four'"/>
+        <o:assert test="$result/data/item[last()] = 'two'"/>
+      </ut:definition>
+    </ut:test>
+  </o:type>
+
+  <o:return select="SortingConverter('ascending')"/>
+
+</o:do>

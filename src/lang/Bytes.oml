@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<o:type name="Bytes" java:class="BytesNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A Bytes node represents a sequence of bytes.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="value" java:class="byte[]"/>
+
+  <o:constructor>
+    <o:param name="other" type="Bytes"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      value = new byte[other.value.length];
+      System.arraycopy(other.value, 0, value, 0, value.length);
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public BytesNode(byte[] value){
+        this();
+        this.value = value;
+    }
+
+    public String toString(){
+        return super.toString()+'&lt;'+value+'&gt;';
+    }
+
+    public byte[] getBytes(){
+      return value;
+    }
+
+    public void setBytes(byte[] value){
+      this.value = value;
+    }
+</java:code>
+
+  <o:constructor>
+    <o:param name="value"/>
+    <java:code>
+      this.value = value.byteValue();
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <java:code>
+      value = new byte[0];
+    </java:code>
+  </o:constructor>
+
+  <o:function name="byte" java:name="getByte">
+    <o:param name="index"/>
+    <doc:p>Get the byte at the given position in this byte sequence</doc:p>
+    <doc:param>Index into this byte sequence, starting at 0.</doc:param>
+    <doc:return>The indexed byte as a Number, or an empty nodeset if the index is not valid for this byte sequence</doc:return>
+    <java:code>
+      int pos = (int)index.numberValue();
+      if(pos &lt; 0 || pos &gt;= value.length)
+        return NodesetNode.EMPTY_SET;
+      return new NumberNode(value[pos]);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set bytes="Bytes($input)"/>
+	<o:return select="$bytes.byte($bytes.length()-1)"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>63</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="bytes" java:name="getBytes">
+    <o:param name="start"/>
+    <o:param name="length"/>
+    <doc:p>Get a new <doc:type/> that consists of the sequence of bytes in this <doc:type/> starting at <doc:param name="start"/> for <doc:param name="length"/> bytes.</doc:p>
+    <doc:param name="start">Start index into this byte sequence, starting at 0.</doc:param>
+    <java:code>
+      int from = (int)start.numberValue();
+      int size = (int)length.numberValue();
+      if(from &lt; 0)
+        from = 0;
+      if(size + from &gt;= value.length)
+        size = value.length - from;
+      byte[] copy = new byte[size];
+      System.arraycopy(value, from, copy, 0, size);
+      return new BytesNode(copy);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set bytes="Bytes($input)"/>
+	<o:return select="$bytes.bytes(4, 4).string()"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>long</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+	<o:set bytes="Bytes($input)"/>
+	<o:return select="$bytes.bytes(4, 8).string()"/>
+      </ut:definition>
+      <ut:input>how long?</ut:input>
+      <ut:result>long?</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="append">
+    <o:param name="bytes" type="Bytes"/>
+    <doc:p>Append <doc:param/> to the end of this sequence of bytes.</doc:p>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      byte[] you = bytes.getBytes();
+      byte[] both = new byte[value.length + you.length];
+      System.arraycopy(value, 0, both, 0, value.length);
+      System.arraycopy(you, 0, both, value.length, you.length);      
+      value = both;
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set a="Bytes('one')" b="Bytes(' ')" c="Bytes('two')"/>
+        <o:return select="$a.append($b).append($c).string()"/>
+      </ut:definition>
+      <ut:result>one two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="prepend">
+    <o:param name="bytes" type="Bytes"/>
+    <doc:p>Prepend <doc:param/> to the beginning of this sequence of bytes.</doc:p>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      byte[] me = value;
+      byte[] you = bytes.getBytes();
+      byte[] both = new byte[me.length + you.length];
+      System.arraycopy(you, 0, both, 0, you.length);      
+      System.arraycopy(me, 0, both, you.length, me.length);
+      value = both;
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set a="Bytes('one')" b="Bytes(' ')" c="Bytes('two')"/>
+        <o:return select="$c.prepend($b).prepend($a).string()"/>
+      </ut:definition>
+      <ut:result>one two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="length">
+    <doc:p>Get the length of this byte sequence</doc:p>
+    <doc:return>The number of bytes</doc:return>
+    <java:code>
+      return new NumberNode(value.length);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Bytes($input).length()"/>
+      </ut:definition>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>30</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <java:code>
+      return new StringNode(new String(value));
+    </java:code>
+  </o:function>
+
+  <!-- tbd: howto turn into Number, boolean -->
+  <o:function name="boolean" java:name="_boolean">
+    <doc:return>Boolean false if this byte sequence is empty or contains a single 0-valued byte.</doc:return>
+    <java:code>
+      switch(value.length){
+        case 0 :
+	  return BooleanNode.FALSE;
+        case 1 :	
+	  return BooleanNode.booleanNode(value[0] != 0x00);
+        default:
+	  return BooleanNode.TRUE;
+      }
+    </java:code>
+  </o:function>
+</o:type>
+

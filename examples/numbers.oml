@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Number functions  -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" >
+
+  <o:log msg="8! = {Number(8).factorial()}"/>
+
+  <o:log msg="sqrt(55) = {Number(55).sqrt()}"/>
+
+  <o:log msg="sin(55) = {Number(55).sin()}"/>
+
+  <o:log msg="atan(55) = {Number(55).atan()}"/>
+
+  <o:log msg="55 ^ 0.8 = {Number(55).pow(0.8)}"/>
+
+  <o:log msg="0 / 0 = {0 div 0}"/>
+
+  <o:set i="1"/>
+  <o:while test="not($i.infinite())">
+    <o:log msg="i = e ^ {$i}"/>
+    <o:set i="$i.exp()"/>
+  </o:while>
+  <o:log msg="i = {$i}"/>
+  <o:log msg="i > 0 ? {$i > 0}"/>
+  <o:log msg="i isNaN ? {$i.NaN()}"/>
+
+</o:program>

@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<o:type name="AssertionError" java:class="AssertionErrorNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    Represents an assertion error.
+  </doc:p>
+
+  <o:parent name="Exception"/>
+
+  <o:variable name="expr" java:class="String"/>
+  <o:variable name="msg" java:class="String"/>
+
+  <o:constructor>
+    <o:param name="other" type="AssertionError"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      expr = other.expr;
+      msg = other.msg;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public AssertionErrorNode(String expr, String msg){
+        this();
+        this.expr = expr;
+        this.msg = msg;
+    }
+
+    public String getExpression(){
+	return expr;
+    }
+
+    public String getMessage(){
+	return msg;
+    }
+
+    public String toString(){
+	return super.toString()+'&lt;'+stringValue()+'&gt;';
+    }
+  </java:code>
+
+  <o:constructor>
+    <o:param name="expr"/>
+    <o:param name="message"/>
+    <java:code>
+      this.expr = expr.stringValue();
+      msg = message.stringValue();
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="expr"/>
+    <java:code>
+      this.expr = expr.stringValue();
+      msg = "Assertion Failed";
+    </java:code>
+  </o:constructor>
+
+  <o:function name="expression">
+    <doc:p>
+      Get a string representation of the assertion expression that failed.
+    </doc:p>
+    <java:code>
+      return new StringNode(expr);
+    </java:code>
+  </o:function>
+
+  <o:function name="message">
+    <doc:p>
+      Retrieve the assertion message.
+    </doc:p>
+    <java:code>
+      return new StringNode(msg);
+    </java:code>
+  </o:function>
+
+  <o:function name="string">
+    <java:code>
+      return new StringNode(msg+": "+expr);
+    </java:code>
+  </o:function>
+
+  <ut:test>
+    <ut:definition>
+      <o:type name="handler">
+	<o:function name="handle">
+	  <o:param name="exc"/>
+	  <o:do>
+	    <o:log msg="expression: {$exc.expression()}"/>
+	    <o:assert test="$exc.expression() = 'false() = true()'"	
+		      msg="invalid assertion expression"/>
+	    <o:log msg="message: {$exc.message()}"/>
+	    <o:assert test="$exc.message() = 'the test assertion failed'"
+		      msg="invalid assertion message"/>
+	  </o:do>
+	</o:function>
+      </o:type>
+      <o:catch handler="handler()">
+	<o:assert test="false() = true()" msg="the test assertion failed"/>
+      </o:catch>
+    </ut:definition>
+  </ut:test>
+</o:type>
+

@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/"
+           xmlns:java="http://www.o-xml.com/java/">
+  <o:param name="host" select="'localhost'" type="String"/>
+  <o:param name="protocol" select="'smtp'" type="String"/>
+  <o:param name="from" type="String"/>
+  <o:param name="reply-to" type="String"/>
+  <o:param name="to" type="String"/>
+  <o:param name="cc" type="String" select="/.."/>
+  <o:param name="bcc" type="String" select="/.."/>
+  <o:param name="subject" type="String"/>
+  <o:param name="message" type="String"/>
+
+  <o:meta>
+    This is a fully functioning mail sender that uses Java Mail.
+    It makes advanced use of o:XML Java extensions.
+    To run it, you need to have the Java Mail jars in your classpath -
+    mail.jar, smtp.jar, activation.jar
+  </o:meta>
+    
+  <java:resolve classname="javax.mail.internet.InternetAddress"/>
+  <java:resolve classname="javax.mail.Message"/>
+  <java:resolve classname="javax.mail.internet.MimeMessage"/>
+  <java:resolve classname="com.sun.mail.smtp.SMTPTransport"/>
+  <java:resolve classname="javax.mail.Session"/>
+  <java:resolve classname="java.util.Properties"/>
+  <java:resolve classname="java.util.ArrayList"/>
+
+  <!-- prepare the Session, Message and Transport objects -->
+  <o:set props="j:Properties()"
+         xmlns:j="http://www.o-xml.com/java/java.util"/>
+  <o:do select="$props.put('mail.transport.protocol', $protocol)"/>
+  <o:do select="$props.put('mail.host', $host)"/>
+  <o:set session="Session:getDefaultInstance($props)"
+         xmlns:Session="http://www.o-xml.com/java/javax.mail.Session"/>
+  <o:set msg="j:MimeMessage($session)"
+         xmlns:j="http://www.o-xml.com/java/javax.mail.internet"/>
+  <o:set transport="$session.getTransport()"/>
+
+  <!-- get javax.mail.Message.RecipientType.TO etc -
+       we use reflection to get to inner class field -->
+  <o:set class="java:toList($msg.getClass().getClasses()).get(1)"/>
+  <o:set TO="$class.getField('TO').get(/..)"/>
+  <o:set CC="$class.getField('CC').get(/..)"/>
+  <o:set BCC="$class.getField('BCC').get(/..)"/>
+
+  <!-- set sender and reply-to -->
+  <o:set from="j:InternetAddress($from)"
+         xmlns:j="http://www.o-xml.com/java/javax.mail.internet"/>
+  <o:do select="$msg.setFrom($from)"/>
+  <o:if test="$reply-to">
+    <o:set reply-to="j:InternetAddress($reply-to)"
+           xmlns:j="http://www.o-xml.com/java/javax.mail.internet"/>
+    <o:set list="j:ArrayList()"
+         xmlns:j="http://www.o-xml.com/java/java.util"/>
+    <o:do select="$list.add($reply-to)"/>
+    <o:set reply-to="$list.toArray(java:array('javax.mail.Address', 1))"/>
+    <o:do select="$msg.setReplyTo($reply-to)"/>
+  </o:if>
+
+  <!-- set recipients -->
+  <o:do select="$msg.addRecipients($TO, $to)"/>
+  <o:if test="$cc">
+    <o:do select="$msg.addRecipients($CC, $cc)"/>
+  </o:if>
+  <o:if test="$bcc">
+    <o:do select="$msg.addRecipients($BCC, $bcc)"/>
+  </o:if>
+
+  <!-- set subject and message text -->
+  <o:do select="$msg.setSubject($subject)"/>
+  <o:do select="$msg.setText($message)"/>
+
+  <!-- save and send message -->
+  <o:do select="$msg.saveChanges()"/>
+  <o:do select="$transport.send($msg)"/>
+
+</o:program>

@@ -1,0 +1,364 @@
+package org.oXML.xpath.parser;
+
+// tbd clean this up
+import java_cup.runtime.*;
+import java.util.*;
+import org.oXML.xpath.iterator.*;
+import org.oXML.xpath.pattern.*;
+import org.oXML.xpath.filter.*;
+import org.oXML.xpath.*;
+
+parser code {:
+
+    Actions callback;
+
+    private parser(String expr, Actions callback)
+    {
+        super(new Yylex(new java.io.StringReader(expr)));
+        this.callback = callback;
+    }
+
+    /* would be nice to be able to reuse a parser... */
+    public static Symbol parse(String expr, Actions callback)
+    throws Exception
+    {
+        parser me = new parser(expr, callback);
+        return me.parse();
+    }
+:}
+
+non terminal location_path;
+non terminal absolute_location_path;
+non terminal relative_location_path;
+non terminal step;
+non terminal axis_specifier;
+non terminal axis_name;
+non terminal node_test;
+non terminal predicate;
+non terminal predicate_expr;
+non terminal abbreviated_absolute_location_path;
+non terminal abbreviated_relative_location_path;
+non terminal abbreviated_step;
+non terminal abbreviated_axis_specifier;
+non terminal expr;
+non terminal primary_expr;
+non terminal function_call;
+non terminal arg_list;
+non terminal arg;
+non terminal union_expr;
+non terminal path_expr;
+non terminal filter_expr;
+non terminal or_expr;
+non terminal and_expr;
+non terminal equality_expr;
+non terminal relational_expr;
+non terminal additive_expr;
+non terminal multiplicative_expr;
+non terminal unary_expr;
+non terminal expr_token;
+non terminal literal;
+non terminal number;
+non terminal digits;
+non terminal operator;
+non terminal operator_name;
+non terminal multiply_operator;
+non terminal function_name;
+non terminal variable_ref;
+non terminal name_test;
+non terminal node_type;
+non terminal expr_white_space;
+
+// tbd!
+// S    ::=    (#x20 | #x9 | #xD | #xA)+
+terminal S; // whitespace as per xml spec
+// QName  ::= (Prefix ':')? LocalPart
+// Prefix ::= NCName
+// LocalPart ::= NCName
+terminal Q_NAME; // qualified name - some sort of string
+// NCName  ::= (Letter | '_') (NCNameChar)*
+// NCNameChar  ::= Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
+terminal NC_NAME; // some other sort of string
+
+terminal COMMA, NOTEQUALS, EQUALS;
+terminal LPAREN, RPAREN;
+terminal LANGLE, RANGLE;
+terminal LT, GT, LTE, GTE;
+terminal ASTERISK, AT;
+terminal IDENTIFIER;
+terminal NUMBER;
+terminal DIGITS;
+terminal BAR;
+terminal PLUS;
+terminal MINUS;
+terminal DIV;
+terminal MOD;
+terminal OR;
+terminal AND;
+terminal QUOTE;
+terminal DOUBLEQUOTE;
+terminal DOLLAR;
+terminal PERCENT;
+terminal HASH;
+terminal SLASH;
+terminal SLASHSLASH;
+terminal DOT;
+terminal DOTDOT;
+terminal COLON;
+terminal DOUBLECOLON;
+terminal ANCESTOR;
+terminal ANCESTOR_OR_SELF;
+terminal ATTRIBUTE;
+terminal CHILD;
+terminal DESCENDANT;
+terminal DESCENDANT_OR_SELF;
+terminal FOLLOWING;
+terminal FOLLOWING_SIBLING;
+terminal NAMESPACE;
+terminal PARENT;
+terminal PRECEDING;
+terminal PRECEDING_SIBLING;
+terminal SELF;
+terminal COMMENT;
+terminal TEXT;
+terminal PROCESSING_INSTRUCTION;
+terminal NODE;
+
+// 2.0 Location Paths
+
+start with expr;
+
+location_path ::=
+                relative_location_path:rlp
+              | absolute_location_path:alp;
+
+absolute_location_path ::= 
+                SLASH
+              | SLASH relative_location_path:rlp
+              | abbreviated_absolute_location_path:aalp;
+
+relative_location_path ::=
+                step:s
+              | relative_location_path:rlp step:s
+              | abbreviated_relative_location_path:arlp;
+
+// 2.1 Location Steps
+
+step ::=
+                axis_specifier:as node_test:nt
+              | axis_specifier:as node_test:nt predicate:p
+              | abbreviated_step:s;
+
+axis_specifier ::= 
+                axis_name DOUBLECOLON
+              | abbreviated_axis_specifier;
+
+// 2.2 Axes
+
+axis_name ::=
+                ANCESTOR
+              | ANCESTOR_OR_SELF
+              | ATTRIBUTE
+              | CHILD
+              | DESCENDANT
+              | DESCENDANT_OR_SELF
+              | FOLLOWING
+              | FOLLOWING_SIBLING
+              | NAMESPACE
+              | PARENT
+              | PRECEDING
+              | PRECEDING_SIBLING
+              | SELF;
+
+// 2.3 Node Tests
+
+node_test ::=
+                name_test:nt
+              | node_type:nt LPAREN RPAREN
+              | PROCESSING_INSTRUCTION LPAREN literal:l RPAREN;
+
+// 2.4 Predicates
+
+predicate ::=
+                LANGLE predicate_expr:pe RANGLE;
+
+predicate_expr ::=
+                expr;
+
+// 2.5 Abbreviated Syntax
+
+abbreviated_absolute_location_path ::=
+                SLASHSLASH relative_location_path:rlp;
+
+abbreviated_relative_location_path ::=
+                relative_location_path:rlp SLASHSLASH step:s;
+
+abbreviated_step ::=
+                DOT
+              | DOTDOT;
+
+abbreviated_axis_specifier ::=
+                AT;
+//              | ;
+
+// 3.0 Expressions 
+// 3.1 Basics
+
+expr ::=
+                or_expr;
+
+primary_expr ::=
+                variable_ref:vr
+              | LPAREN expr:e RPAREN
+              | literal:l
+              | number:n
+              | function_call;
+
+// 3.2 Function Calls
+
+function_call ::=
+                function_name:fn LPAREN arg_list:al RPAREN;
+
+// nb arg_list is my addition /m
+arg_list ::=
+                arg:a
+              | arg_list:al COMMA arg:a
+              | ;
+
+arg ::=
+                expr:e;
+
+// 3.3 Node Sets
+
+union_expr ::=
+                path_expr:pe
+              | union_expr:ue BAR path_expr:pe;
+
+path_expr ::=
+                location_path
+              | filter_expr:fe
+              | filter_expr:fe SLASH relative_location_path:rlp
+              | filter_expr:fe SLASHSLASH relative_location_path:rlp;
+
+filter_expr ::=
+                primary_expr:pe
+              | filter_expr:fe predicate:p;
+
+// 3.4 Booleans
+
+or_expr ::=
+                and_expr:ae
+              | or_expr:oe OR and_expr:ae;
+
+and_expr ::=
+                equality_expr:ee
+              | and_expr:ae AND equality_expr:ee;
+
+equality_expr ::=
+                relational_expr:re
+              | equality_expr:ee EQUALS relational_expr:re
+              | equality_expr:ee NOTEQUALS relational_expr:re;
+
+relational_expr ::=
+                additive_expr:ae
+              | relational_expr:re LT additive_expr:ae
+              | relational_expr:re GT additive_expr:ae
+              | relational_expr:re LTE additive_expr:ae
+              | relational_expr:re GTE additive_expr:ae;
+
+// 3.5 Numbers
+
+additive_expr ::=
+                multiplicative_expr:me
+              | additive_expr:ae PLUS multiplicative_expr:me
+              | additive_expr:ae MINUS multiplicative_expr:me;
+
+multiplicative_expr ::=
+                unary_expr:ue
+              | multiplicative_expr:me multiply_operator:mo unary_expr:ue
+              | multiplicative_expr:me DIV unary_expr:ue
+              | multiplicative_expr:me MOD unary_expr:ue;
+
+unary_expr ::=
+                union_expr:ue
+              | MINUS union_expr:ue;
+
+// 3.6 Strings
+
+// 3.7 Lexical Structure
+
+expr_token ::=
+                LPAREN
+              | RPAREN
+              | RANGLE
+              | LANGLE
+              | DOT
+              | DOTDOT
+              | AT
+              | COMMA
+              | DOUBLECOLON
+              | name_test
+              | node_type
+              | operator
+              | function_name
+              | axis_name
+              | literal
+              | number
+              | variable_ref;
+
+literal ::= 
+                QUOTE IDENTIFIER:i QUOTE
+              | DOUBLEQUOTE IDENTIFIER:i DOUBLEQUOTE;
+
+number ::=
+                NUMBER:n;
+
+digits ::=
+                DIGITS:d;
+
+operator ::=
+                operator_name
+              | multiply_operator
+              | SLASH
+              | SLASHSLASH
+              | BAR
+              | PLUS
+              | MINUS
+              | EQUALS
+              | NOTEQUALS
+              | LT
+              | GT
+              | LTE
+              | GTE;
+
+operator_name ::=
+                AND
+              | OR
+              | MOD
+              | DIV;
+
+multiply_operator ::=
+                ASTERISK;
+
+function_name ::=
+                Q_NAME:qn;
+                // qname - nodetype; // ???
+
+variable_ref ::=
+                DOLLAR Q_NAME:qn
+              | PERCENT Q_NAME:qn
+              | HASH Q_NAME:qn;
+
+name_test ::=
+                ASTERISK
+              | NC_NAME COLON ASTERISK
+              | Q_NAME;
+
+node_type ::=
+                COMMENT
+              | TEXT
+              | PROCESSING_INSTRUCTION
+              | NODE;
+
+expr_white_space ::=
+                S;
+

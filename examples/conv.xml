@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/"
+  xmlns:java="http://www.o-xml.com/java/">
+
+  <o:variable name="data">
+    <data>
+      <one>one</one>
+      <two>
+        <nested>two</nested>
+      </two>
+      <value>string data</value>
+    </data>
+  </o:variable>
+
+  <original>
+    <o:eval select="$data"/>
+  </original>
+
+  <o:variable name="dom" select="java:toDOM($data)"/>
+
+  <dom>
+    <o:eval select="$dom"/>
+  </dom>
+
+  <o:variable name="native" select="java:toNative($dom)"/>
+
+  <native>
+    <o:eval select="$native"/>
+  </native>
+
+</program>

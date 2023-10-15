@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" xmlns:m="http://www.o-xml.com/mine">
+
+  <o:procedure name="m:hello">
+    <o:param name="who" select="'world'"/>
+    <o:do>
+      <o:eval select="concat('Hello ', $who, '!')"/>
+    </o:do>
+  </o:procedure>
+
+  <m:hello/>
+
+</program>

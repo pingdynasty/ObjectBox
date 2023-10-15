@@ -1,0 +1,377 @@
+<?xml version="1.0"?>
+<o:type name="Node" java:class="NodeNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/"
+  xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <doc:p>Node is the base type of all other types.</doc:p>
+
+  <o:variable name="parent" type="Parent"/>
+
+  <java:code>
+    // nothing here
+  </java:code>
+
+  <o:constructor>
+    <o:param name="other" type="Node"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+//      if(other.parent != null)
+//        this.parent = (ParentNode)other.parent.copy(deep).getInstance(ParentNode.TYPE.getName());
+// don't copy parent!
+    </java:code>
+  </o:constructor>
+
+  <ut:dataset name="element">
+    <test attr1="one" attr2="two">
+      <one>one</one>
+      <two>two</two>
+      <three>three</three>
+    </test>
+  </ut:dataset>
+
+  <o:function name="super" access="protected"
+              java:name="_super" java:throws="ObjectBoxException">
+    <o:param name="typename"/>
+    <doc:p>Cast this <doc:type/> to a super type. This restricts the accessible interface to that of <doc:param/>, which must be the name of a super type of this <doc:type/>.</doc:p>
+    <java:code>
+      Name nm = new Name(typename.stringValue());
+      Type type = this.getType().getParentType(nm);
+      if(type == null)
+          throw new ObjectBoxException("invalid "+this.getType().getName()+" supertype: "+nm);
+      return new CastNode(this, type);
+    </java:code>
+  </o:function>
+
+  <o:function name="super" access="protected"
+              java:name="_super" java:throws="ObjectBoxException">
+    <o:param name="typename" type="Name"/>
+    <doc:p>Cast this <doc:type/> to a super type. This restricts the accessible interface to that of <doc:param/>, which must be the name of a super type of this <doc:type/>.</doc:p>
+    <java:code>
+      Name nm = typename.getName();
+      Type type = this.getType().getParentType(nm);
+      if(type == null)
+          throw new ObjectBoxException("invalid "+this.getType().getName()+" supertype: "+nm);
+      return new CastNode(this, type);
+    </java:code>
+  </o:function>
+
+  <o:function name="previous">
+    <doc:p>Get the previous sibling node.</doc:p>
+    <java:code>
+      if(parent == null)
+        return NodesetNode.EMPTY_SET;
+      Nodeset kids = parent.getChildNodes();
+      int pos = kids.indexOf(me);
+      if(pos &lt; 0)
+          throw new RuntimeException
+              ("hierarchy exception: parent has no such child: "+this);
+      if(--pos >= 0)
+        return kids.getNode(pos);
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+	<o:return select="$input/test/two.previous()"/>
+      </ut:definition>
+      <ut:result>one</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="next">
+    <doc:p>Get the next sibling node.</doc:p>
+    <java:code>
+      if(parent == null)
+        return NodesetNode.EMPTY_SET;
+      Nodeset kids = parent.getChildNodes();
+      int pos = kids.indexOf(me);
+      if(pos &lt; 0)
+        throw new RuntimeException
+          ("hierarchy exception: parent has no such child: "+this);
+      if(++pos &lt; kids.size())
+	return kids.getNode(pos);
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+	<o:return select="$input/test/two.next()"/>
+      </ut:definition>
+      <ut:result>three</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+	<o:return select="$input/test/three.next()"/>
+      </ut:definition>
+      <ut:result></ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="copy">
+    <doc:p>Create a deep copy of this node - all child nodes will be copied as well.</doc:p>
+    <doc:same>Node.copy(true())</doc:same>
+    <doc:return>A deep copy of this node.</doc:return>
+    <java:code>
+      return me.copy(true);
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+	<o:log msg="input {$input.type()}"/>
+        <o:set copy="$input.copy()"/>
+	<o:log msg="copy {$copy.type()}"/>
+	<o:log select="$input"/>
+	<o:log select="$copy"/>
+        <o:assert test="count($copy/test/*) = 3"/>
+        <o:assert test="$copy/test.attribute('attr1') = 'one'"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="copy">
+    <o:param name="deep"/>
+    <doc:p>Create a copy of this node. If the boolean value of <doc:param name="deep"/> is true, all child nodes will be copied as well.</doc:p>
+    <doc:return>An copy of this node.</doc:return>
+    <java:code>
+      return me.copy(deep.booleanValue());
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:set copy="$input.copy(false())"/>
+	<o:log select="$copy"/>
+        <o:assert test="count($copy/test/*) = 0"/>
+        <o:assert test="$copy/test.attribute('attr1') = 'one'"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="equals" java:name="doEquals">
+    <o:param name="other"/>
+    <java:code>
+      return BooleanNode.booleanNode(me == other.cast());
+    </java:code>
+  </o:function>
+
+  <o:function name="parent">
+    <doc:p>Get the parent node.</doc:p>
+    <doc:return>
+      The parent of this node, or an empty nodeset if the node has no parent.
+    </doc:return>
+    <java:code>
+      if(parent == null)
+        return NodesetNode.EMPTY_SET;
+      return parent;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:return select="$input/test/two.parent().name()"/>
+      </ut:definition>
+      <ut:result>test</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="parent">
+    <o:param name="parent" type="Parent"/>
+    <doc:p>Set the parent node.</doc:p>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      this.parent = parent;
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="detach">
+    <doc:p>Clear the parent node.</doc:p>
+    <java:code>
+      parent = null;
+      return this;
+    </java:code>
+  </o:function>
+ 
+  <o:function name="document">
+    <doc:p>Get the owning document node.</doc:p>
+    <doc:return>The Document that owns this node, or an empty nodeset if the node does not belong to a document.</doc:return>
+    <java:code>
+        if(parent == null)
+            return NodesetNode.EMPTY_SET;
+        return parent.getDocument();
+    </java:code>
+  </o:function>
+ 
+  <o:function name="string">
+    <doc:p>Get the String value of this <doc:type/>.</doc:p>
+    <doc:see ref="unknown">Language or XPath Specification, String Value</doc:see>
+    <java:code>
+      return new StringNode("#"+getType().getName()+"#");
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:return select="$input/test/two.string()"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+ 
+  <o:function name="bytes">
+    <doc:p>Get a byte representation of (the string value of) this node.</doc:p>
+    <java:code>
+      return new BytesNode(stringValue().getBytes());
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:return select="$input/test/two.bytes()"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="number">
+    <doc:p>Get the Number value of this node.</doc:p>
+    <java:code>
+      String value = stringValue();
+      try{
+          return new NumberNode(Double.parseDouble(value));
+      }catch(NumberFormatException exc){
+          return new NumberNode(Double.NaN);
+      }
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:assert test="$input/test/two.number().NaN()"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="boolean" java:name="_boolean">
+    <doc:p>
+      Get the Boolean value of this node.
+    </doc:p>
+    <java:code>
+      String value = stringValue();
+      return BooleanNode.booleanNode(value.length() != 0);
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:assert test="$input/test/two.boolean()"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="remove">
+    <doc:p>
+      Detach this node from its parent node (if it has one).
+    </doc:p>
+    <doc:return>The current (removed) node.</doc:return>
+    <doc:same>$current.parent().remove($current)</doc:same>
+    <java:code>
+      if(parent != null){
+        parent.removeChild(me);
+	parent = null;
+      }
+      return this;
+     </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test/two.remove()"/>
+        <o:assert test="count($input/test/*) = 2"/>
+        <o:assert test="not($input/test/two)"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <!--  <o:function name="insertBefore">
+    <o:param name="other"/>
+    <doc:p>
+      Insert another node before this one in the parents set of child nodes.
+    </doc:p>
+    <doc:param name="other">The node to insert.</doc:param>
+    <doc:return>The current node.</doc:return>
+    <doc:same>$current.parent().insertBefore($current, $other)</doc:same>
+    <java:code>
+      if(parent != null)
+        parent.insertBefore(this, other);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test/two.insertBefore(Element('one-and-a-half'))"/>
+        <o:assert test="count($input/test/*) = 4"/>
+        <o:return select="$input/test/*[2].name()"/>
+      </ut:definition>
+      <ut:result>one-and-a-half</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="insertAfter">
+    <o:param name="other"/>
+    <doc:p>
+      Insert another node after this one in the parents set of child nodes.
+    </doc:p>
+    <doc:param name="other">The node to insert.</doc:param>
+    <doc:return>The current node.</doc:return>
+    <doc:same>$current.parent().insertAfter($current, $other)</doc:same>
+    <java:code>
+      if(parent != null)
+        parent.insertAfter(this, other);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test/one.insertAfter(Element('one-and-a-half'))"/>
+        <o:assert test="count($input/test/*) = 4"/>
+        <o:return select="$input/test/*[2].name()"/>
+      </ut:definition>
+      <ut:result>one-and-a-half</ut:result>
+    </ut:test>
+  </o:function> -->
+
+  <o:function name="replace">
+    <o:param name="replacement"/>
+    <doc:p>
+      Replace this node with another in the parents set of childnodes (if this node has a parent).
+    </doc:p>
+    <doc:return>The current, replaced node.</doc:return>
+    <doc:same>$current.parent().replace($current, $replacement)</doc:same>
+    <java:code>
+      if(parent != null)
+        parent.replace(this, replacement);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test/two.replace(Element('one-and-a-half'))"/>
+        <o:assert test="count($input/test/*) = 3"/>
+        <o:return select="$input/test/*[2].name()"/>
+      </ut:definition>
+      <ut:result>one-and-a-half</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="nodes">
+    <doc:p>Get a nodeset containing the child nodes of this <doc:type/>, if any.</doc:p>
+    <java:code>
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+
+  <o:function name="type">
+    <doc:p>Get the (name of the) type of this <doc:type/>.</doc:p>
+    <java:code>
+      return new NameNode(getType().getName());
+    </java:code>
+  </o:function>
+
+</o:type>

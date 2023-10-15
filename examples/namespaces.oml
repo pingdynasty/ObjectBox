@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates output namespace handling -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:ex1="urn:ex1" xmlns:ex2="urn:ex2">
+
+  <results>
+    <ex1:element ex2:att="value"/>
+    <ex3:element ex4:att="value" xmlns:ex3="urn:ex3" xmlns:ex4="urn:ex3"/>
+    <element xmlns="urn:ex4" att="value">
+      <content>text</content>
+    </element>
+  </results>
+
+  <example>
+    <!-- show prefix scope -->
+    <local xmlns:ex1="urn:ex2" >
+      <o:variable name="scope1">
+        <!-- here ex1 is urn:ex2 -->
+        <ex1:scope/>
+      </o:variable>
+      <o:eval select="$scope1"/>
+      <o:log msg="ex1: {$scope1.name().namespace()}"/>
+    </local>
+    <o:variable name="scope2">
+      <!-- here ex1 is urn:ex1 -->
+      <ex1:scope/>
+    </o:variable>
+    <o:eval select="$scope2"/>
+    <o:log msg="ex1: {$scope2.name().namespace()}"/>
+  </example>
+
+</o:program>
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+  <bean class="org.springframework.scripting.support.ScriptFactoryPostProcessor"/>
+
+<!--   <bean id="messenger" class="org.oXML.extras.springframework.JavaMessenger"> -->
+<!--     <constructor-arg value="Hello Java!"/> -->
+<!--   </bean> -->
+
+  <bean id="mutator" class="org.oXML.extras.springframework.oXMLScriptFactory">
+    <constructor-arg value="classpath:org/oXML/extras/springframework/MessageMutator.oml"/>
+    <constructor-arg value="org.oXML.extras.springframework.MessageMutator"/>
+  </bean>
+
+</beans>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates node names -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:ex1="urn:ex1" xmlns:ex2="urn:ex2">
+
+  <o:set element="Element('urn:namespace', 'local-name')"/>
+
+  <o:log msg="local-name: {local-name($element)} namespace-uri: {namespace-uri($element)}"/>
+  <o:log msg="name: {name($element)} name: {$element.name()}"/>
+  <o:log msg="namespace: {$element.name().namespace()} local: {$element.name().local()}"/>
+
+</o:program>
+

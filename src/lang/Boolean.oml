@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<o:type name="Boolean" java:class="BooleanNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A Boolean represents the two boolean values true and false.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="value" java:class="boolean"/>
+
+  <o:constructor>
+    <o:param name="other" type="Boolean"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      value = other.value;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public static BooleanNode TRUE = new BooleanNode(true);
+    public static BooleanNode FALSE = new BooleanNode(false);
+
+    /**
+     * constructor has private access: 
+     * use BooleanNode.booleanNode() instead (flyweight pattern)
+     */
+    private BooleanNode(boolean value){
+        this();
+        this.value = value;
+    }
+
+    public static BooleanNode booleanNode(boolean value){
+        return value ? TRUE : FALSE;
+    }
+
+    public static BooleanNode booleanNode(Boolean value){
+        return booleanNode(value.booleanValue());
+    }
+
+    public static BooleanNode booleanNode(Node value){
+        return booleanNode(value.booleanValue());
+    }
+
+    public boolean getBoolean(){
+        return value;
+    }
+
+    public String toString(){
+        return super.toString()+'&lt;'+value+'&gt;';
+    }
+</java:code>
+
+  <o:constructor>
+    <o:param name="value"/>
+    <java:code>
+      this.value = value.booleanValue();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="number">
+    <doc:see>XPath v1.0 4.4 Number Functions</doc:see>
+    <doc:p>Boolean true is converted to 1; boolean false is converted to 0</doc:p>
+    <java:code>
+      return new NumberNode(value ? 1.0 : 0.0);
+    </java:code>
+  </o:function>
+
+  <!-- overloaded Node.boolean() to avoid unnecessary copy -->
+  <o:function name="boolean" java:name="_boolean">
+    <java:code>
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="string">
+    <doc:see>XPath v1.0 4.2 String Functions</doc:see>
+    <doc:p>The boolean false value is converted to the string false. The boolean true value is converted to the string true.</doc:p>
+    <java:code>
+      return new StringNode(value ? "true" : "false");
+    </java:code>
+  </o:function>
+
+  <o:function name="bytes">
+    <doc:p>Encode this <doc:type/> into a sequence of bytes.</doc:p>
+    <doc:return>A single byte, 1 if this <doc:type/> is true otherwise 0.</doc:return>
+    <java:code>
+      return new BytesNode(new byte[]{value ? (byte)1 : (byte)0});
+    </java:code>
+  </o:function>
+
+</o:type>
+

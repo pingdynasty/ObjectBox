@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/"
+    xmlns:java="http://www.o-xml.com/java/"
+    xmlns:jns="http://www.o-xml.com/java/org.oXML.extras.springframework">
+
+  <java:resolve classname="org.oXML.extras.springframework.Messenger"/>
+  <java:resolve classname="org.oXML.extras.springframework.JavaMessenger"/>
+
+  <!-- sample o:XML bean that implements the MessageMutator interface -->
+  <o:type name="MessageMutator">
+
+    <!-- the mutate method uses a Messenger (in this case a JRuby or Java bean) -->
+    <o:function name="mutate">
+      <o:param name="msgr" type="jns:Messenger"/>
+      <o:do>
+        <o:set msg="$msgr.getMessage()"/>
+        <o:do select="$msgr.setMessage(substitute($msg, 'Hello', 'Greetings'))"/>
+        <o:return select="$msgr"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="createMessenger">
+      <o:do>
+        <!-- create a JavaMessenger POJO -->
+        <o:return select="jns:JavaMessenger('Hello Java!')"/>
+      </o:do>
+    </o:function>
+
+  </o:type>
+
+  <o:return select="MessageMutator()"/>
+
+</o:program>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+  <bean class="org.springframework.scripting.support.ScriptFactoryPostProcessor"/>
+
+  <!-- note: this is a JRuby Messenger! -->
+  <bean id="messenger" class="org.springframework.scripting.jruby.JRubyScriptFactory">
+    <constructor-arg value="classpath:org/oXML/extras/springframework/Messenger.rb"/>
+    <constructor-arg value="org.oXML.extras.springframework.Messenger"/>
+    <property name="message" value="Hello Ruby!"/>
+  </bean>
+
+  <bean id="mutator" class="org.oXML.extras.springframework.oXMLScriptFactory">
+    <constructor-arg value="classpath:org/oXML/extras/springframework/MessageMutator.oml"/>
+    <constructor-arg value="org.oXML.extras.springframework.MessageMutator"/>
+  </bean>
+
+</beans>

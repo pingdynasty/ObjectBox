@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<o:type name="Type"
+  xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:comment>
+    Program.types() : Nodeset#Type
+    Program.type(Name) : Type
+    Node.type() : Type
+  </o:comment>
+
+  <java classname="TypeNode" extends="ElementNode">
+
+    private Type type;
+
+    // at the moment, Type is simply a placeholder for functions
+
+    public TypeNode(Type type){
+      super(this, new Name("type"));
+      setAttribute(new Name("name"), type.getName().toString());
+      this.type = type;
+      java.util.List funs = type.getFunctions().getFunctions();
+      for(int i=0; i&lt;funs.size(); ++i){
+        Function fun = (Function)funs.get(i);
+        addChildNode(new FunctionNode(fun));
+      }
+
+      Type[] parents = type.getParentTypes();
+      for(int i=0; i&lt;parents.length; ++i){
+        addChildNode(new TypeNode(new Name("parent"), parents[i]));
+      }
+    }
+
+    protected TypeNode(Name name, Type type){
+      super(this, name);
+      setAttribute(new Name("name"), type.getName().toString());
+      this.type = type;
+    }
+
+    public Type getWrappedType(){
+      return type;
+    }
+  </java>
+
+  <o:parent name="Element"/>
+
+  <o:function name="Type">
+    <o:param name="name" type="Name"/>
+    <o:param name="parents"/>
+    <java>
+      Nodeset set = parents.getChildNodes();
+      Type[] ps = new Type[set.size()];
+      for(int i=0; i&lt;ps.length; ++i){
+         TypeNode datype = (TypeNode)set.getNode(i);
+         ps[i] = datype.getWrappedType();
+      }
+      Type datype = new Type(name.getName(), ps);
+      return new TypeNode(datype);
+    </java>
+  </o:function>
+
+  <!-- 
+  <o:function name="inherits">
+    <o:param name="name" type="Type"/>
+  </o:function>
+
+  <o:function name="parents">
+    : Nodeset#Type
+  </o:function>
+  -->
+
+  <!-- self-modifying code -->
+  <!--
+  <o:function name="add">
+    <o:param name="function" type="Function"/>
+  </o:function>
+
+  <o:function name="add">
+    <o:param name="variable" type="Variable"/>
+  </o:function>
+  -->
+</o:type>
+

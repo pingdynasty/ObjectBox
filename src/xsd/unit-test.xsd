@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema targetNamespace="http://www.o-xml.org/namespace/unit-test/" 
+	   xmlns:ut="http://www.o-xml.org/namespace/unit-test/"
+	   xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	   elementFormDefault="qualified"
+	   attributeFormDefault="unqualified">
+
+  <xs:element name="suite">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+	<xs:group ref="top-level"/>
+	<xs:any namespace="##other" processContents="lax"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:group name="top-level">
+    <xs:choice>
+      <xs:element ref="ut:dataset"/>
+      <xs:element ref="ut:test"/>
+      <xs:element ref="ut:definition"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:element name="dataset">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+	<xs:any namespace="##other" processContents="lax"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="type" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="test">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="ut:definition" minOccurs="1" maxOccurs="1"/>
+	<xs:element ref="ut:input" minOccurs="0" maxOccurs="1"/>
+	<xs:element ref="ut:result" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="definition">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+	<xs:any namespace="##other" processContents="lax"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="ref" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="input">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+	<xs:any namespace="##other" processContents="lax"/>
+      </xs:choice>
+      <xs:attribute name="name" type="xs:string" use="optional"/>
+      <xs:attribute name="type" type="xs:string" use="optional"/>
+      <xs:attribute name="ref" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="result">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+	<xs:any namespace="##other" processContents="lax"/>
+      </xs:choice>
+      <xs:attribute name="ref" type="xs:string" use="optional"/>
+      <xs:attribute name="type" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

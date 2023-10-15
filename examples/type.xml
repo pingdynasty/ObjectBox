@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/">
+
+  <o:type name="ex:User">
+    <!--    <o:parent name="Element"/> -->
+    <o:variable name="name"/>
+
+    <!-- define a constructor that takes one argument -->
+    <o:function name="ex:User">
+      <!--      <o:parent name="Element" select="Element('User')"/>-->
+      <o:param name="name"/>
+      <o:do>
+        <ex:User>
+          <name><o:eval select="$name"/></name>
+        </ex:User>
+      </o:do>
+    </o:function>
+
+    <o:function name="name">
+      <o:do>
+        <o:return select="$name"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:type name="ex:SuperUser">
+  <!-- SuperUser is a child type of User -->
+    <o:parent name="ex:User"/>
+    <o:variable name="password"/>
+
+    <o:function name="ex:SuperUser">
+      <o:param name="name"/>
+      <o:param name="password"/>
+      <!-- initialise parent type -->
+      <o:parent name="ex:User" select="ex:User($name)"/>
+      <o:do>
+        <ex:SuperUser>
+          <name><o:eval select="$this.name()"/></name>
+          <password><o:eval select="$password"/></password>
+        </ex:SuperUser>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:variable name="user" select="ex:SuperUser('root', 'banana')"/>
+
+  <o:log msg="user: {$user}"/>
+
+  <o:eval select="Comment('this is my comment')"/>
+
+  <o:eval select="Element('http://www.o-xml.org/examples/etc', 'comment')"/>
+
+  <user>
+    <o:eval select="$user"/>
+  </user>
+
+</program>

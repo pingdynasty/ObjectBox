@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<o:do xmlns:o="http://www.o-xml.org/lang/"
+  xmlns:dbc="urn:DesignByContract">
+
+  <o:type name="Stack">
+
+    <o:variable name="items" select="List()"/>
+    <o:variable name="capacity"/>
+
+    <dbc:invariant test="count($items) &lt;= $capacity" error="stack overflow!"/>
+
+    <o:function name="Stack">
+      <o:param name="capacity"/>
+      <o:do/>
+    </o:function>
+
+    <o:function name="push">
+      <o:param name="item"/>
+
+      <dbc:pre test="$item"/>
+      <dbc:post test="$items[last()] = $item"/>
+      <dbc:post test="count($items) = count($dbc:items) + 1" error="push failed"/>
+
+      <o:do>
+        <o:do select="$items.add($item)"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="pop">
+      <dbc:pre test="count($items) &gt; 0" error="stack underflow!"/>
+      <dbc:post test="count($dbc:items) = count($items) + 1" error="pop failed"/>
+      <dbc:post test="$dbc:return = $dbc:items[last()]"/>
+      <o:do>
+        <o:return select="$items.remove($items.size()-1)"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="empty">
+      <o:do>
+        <o:return select="$items.size() = 0"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="size">
+      <o:do>
+        <o:return select="$items.size()"/>
+      </o:do>
+    </o:function>
+
+  </o:type>
+
+  <o:set stack="Stack(100)"/>
+
+  <o:do select="$stack.push('hello')"/>
+  <o:do select="$stack.push('goodbye')"/>
+  <o:do select="$stack.push('top')"/>
+  <o:do select="$stack.push('of')"/>
+  <o:do select="$stack.push('the')"/>
+  <o:do select="$stack.push('pops')"/>
+
+  <o:while test="not($stack.empty())">
+    <o:log msg="pop: {$stack.pop()}"/>
+  </o:while>
+
+  <o:catch>
+    <o:log msg="pop: {$stack.pop()}"/>
+  </o:catch>
+
+  <o:set stack="Stack(2)"/>
+
+  <o:do select="$stack.push('hello')"/>
+  <o:do select="$stack.push('goodbye')"/>
+
+  <o:catch>
+    <o:do select="$stack.push('limit')"/>
+  </o:catch>
+
+  <o:log msg="goodbye!"/>
+</o:do>

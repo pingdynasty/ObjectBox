@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<o:type name="Compiler"
+  xmlns:o="http://www.o-xml.org/lang/"
+  xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <doc:p>
+    Completes the reflection package.
+    eg servlet compiles target file.
+       gets program parameters
+       sets/binds parameters from servlet parameters etc
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <java classname="CompilerNode" extends="AbstractNode">
+    public CompilerNode(){
+      super(TYPE);
+    }
+
+    public CompilerNode(CompilerNode other, boolean deep){
+      super(other, deep);
+    }
+
+    public Node copy(boolean deep){
+      return new CompilerNode(this, deep);
+    }
+  </java>
+
+  <o:function name="loadExtension">
+    <o:param name="name"/>
+    load the extension with the given (Java class-) name. 
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <!-- compile source code into a Program that can be run -->
+  <o:function name="compile">
+    <o:param name="source"/>
+    : Program
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <!-- parse an o:Path expression -->
+  <o:function name="parse">
+    <o:param name="expression"/>
+    : Expression
+    <java>
+      return NodesetNode.EMPTY_SET;
+    </java>
+  </o:function>
+
+  <!-- Expression.evaluate(contextnode) -->
+  <!-- Expression.bind(NamespaceResolver) -->
+  <!-- Expression.bind(Variable) -->
+
+</o:type>
+

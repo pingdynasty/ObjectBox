@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<o:do name="boolean-functions" 
+      xmlns:o="http://www.o-xml.org/lang/"
+      xmlns:java="http://www.o-xml.org/java"
+      xmlns:ut="http://www.o-xml.org/namespace/unit-test/" 
+      xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:function name="boolean" java:name="_boolean">
+    <o:param name="value"/>
+    <doc:p>get the boolean value of a node.</doc:p>
+    <java:code>
+    return BooleanNode.booleanNode(value.booleanValue());
+  </java:code>
+  </o:function>
+
+  <o:function name="false" java:name="_false">
+    <doc:p>false() always returns a boolean false value.</doc:p>
+    <java:code>
+    return BooleanNode.FALSE;
+  </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="string(false())"/>
+      </ut:definition>
+      <ut:result>false</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="not">
+    <o:param name="value"/>
+    <doc:p>
+ * Function: boolean not(boolean)
+ * The not function returns true if its argument is false, and false otherwise.
+    </doc:p>
+    <java:code>
+    return BooleanNode.booleanNode(!value.booleanValue());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:assert test="not(false())"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="true" java:name="_true">
+    <doc:p>true() always returns a boolean true value.</doc:p>
+    <java:code>
+    return BooleanNode.TRUE;
+  </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:assert test="true()"/>
+        <o:return select="string(true())"/>
+      </ut:definition>
+      <ut:result>true</ut:result>
+    </ut:test>
+  </o:function>
+
+</o:do>

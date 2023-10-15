@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<o:type name="ExceptionHandler" java:class="ExceptionHandlerNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    Implements simple error logging.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:constructor>
+    <o:param name="other" type="ExceptionHandler"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      /// nothing here
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+      /// nothing here
+  </java:code>
+
+  <o:constructor>
+    <java:code>
+      /// nothing here
+    </java:code>
+  </o:constructor>
+
+  <o:function name="handle">
+    <o:param name="exception"/>
+    <doc:p>
+      Prints out exception information.
+    </doc:p>
+    <java:code>
+      org.oXML.util.Log.error(exception.stringValue());
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+
+  <o:function name="handle">
+    <o:param name="exception" type="AssertionError"/>
+    <doc:p>
+      Prints out exception information.
+    </doc:p>
+    <java:code>
+      org.oXML.util.Log.error(exception.stringValue());
+      org.oXML.util.Log.info("Failed assertion: "+exception.getExpression());
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+
+  <o:function name="handle">
+    <o:param name="exception" type="SystemError"/>
+    <doc:p>
+      Prints out exception information.
+    </doc:p>
+    <java:code>
+      org.oXML.util.Log.exception(exception.getThrowable(), "System Error");
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+</o:type>
+

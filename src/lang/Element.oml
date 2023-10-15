@@ -1,0 +1,297 @@
+<?xml version="1.0"?>
+<o:type name="Element" java:class="ElementNode"
+  xmlns:o="http://www.o-xml.org/lang/"
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    An Element object represents an XML Element.
+    An Element has a name, a set of attributes and a set of child nodes.
+  </doc:p>
+
+  <o:parent name="Parent"/>
+
+  <o:variable name="name" java:class="Name"/>
+  <o:variable name="attributes" java:class="java.util.Map"/>
+
+  <o:constructor>
+    <o:param name="other" type="Element"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      name = other.name;
+      attributes = new java.util.HashMap();
+      // tbd copy attributes
+      attributes.putAll(other.attributes);
+      </java:code>
+  </o:constructor>
+
+  <java:code>
+    public ElementNode(Name name){
+      this();
+      this.name = name;
+      attributes = new java.util.HashMap();
+    }
+
+    /**
+    * @param attributes Map holding attribute name/value pairs as Strings
+    */
+    public ElementNode(Name name, java.util.Map attributes){
+      this();
+      this.name = name;
+      attributes = new java.util.HashMap();
+      java.util.Iterator it = attributes.keySet().iterator();
+      while(it.hasNext()){
+        Name aname = new Name((String)it.next());
+	String avalue = (String)attributes.get(aname);
+	AttributeNode attribute = new AttributeNode(aname, avalue);
+	attributes.put(aname, attribute);
+	attribute.setParent(this);
+      }
+    }
+
+    public String toString(){
+      return super.toString()+'&lt;'+name+'>'+'['+attributes+']';
+    }
+  </java:code>
+
+  <ut:dataset name="element">
+    <test attr1="one" attr2="two" ut:attr3="three">
+      <one>one</one>
+      <two>two</two>
+      <three>three</three>
+    </test>
+  </ut:dataset>
+
+  <o:constructor>
+    <o:param name="name" type="Name"/>
+    <java:code>
+      this.name = name.getName();
+      attributes = new java.util.HashMap();
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="name"/>
+    <java:code>
+      this.name = new Name(name.stringValue());
+      attributes = new java.util.HashMap();
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="namespace"/>
+    <o:param name="name"/>
+    <java:code>
+      this.name = new Name(namespace.stringValue(), name.stringValue());
+      attributes = new java.util.HashMap();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="name">
+    <doc:p>
+      Get the name of this element.
+    </doc:p>
+    <doc:return>A Name node.</doc:return>
+    <java:code>
+      return new NameNode(name);
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:return select="$input/test.name()"/>
+      </ut:definition>
+      <ut:result>test</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="name">
+    <o:param name="name"/>
+    <doc:p>Set the name of this element.</doc:p>
+    <java:code>
+      this.name = new Name(name.stringValue());
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test.name('renamed')"/>
+        <!-- check that we haven't lost any child elements -->
+        <o:assert test="count($input/*/*) = 3"/>
+        <o:return select="$input/*.name()"/>
+      </ut:definition>
+      <ut:result>renamed</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="name">
+    <o:param name="name" type="Name"/>
+    <doc:p>Set the name of this element.</doc:p>
+    <java:code>
+      this.name = name.getName();
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test.name(Name('urn:namespace', 'renamed'))"/>
+        <!-- check that we haven't lost any child elements -->
+        <o:assert test="count($input/*/*) = 3"/>
+        <o:return select="$input/*.name().local()"/>
+      </ut:definition>
+      <ut:result>renamed</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="attribute">
+    <o:param name="name"/>
+    <doc:p>Get the named Element attribute.</doc:p>
+    <doc:return>A <doc:type name="Attribute"/>.</doc:return>
+    <java:code>
+      Name nm = new Name(name.stringValue());
+      AttributeNode attribute = (AttributeNode)attributes.get(nm);
+      if(attribute == null)
+        return NodesetNode.EMPTY_SET;
+      return attribute;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:return select="$input/test.attribute('attr2').string()"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="attribute">
+    <o:param name="name" type="Name"/>
+    <doc:p>Get the named Element attribute.</doc:p>
+    <doc:return>A <doc:type name="Attribute"/>.</doc:return>
+    <java:code>
+      Name nm = name.getNodeName();
+      AttributeNode attribute = (AttributeNode)attributes.get(nm);
+      if(attribute == null)
+        return NodesetNode.EMPTY_SET;
+      return attribute;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:return select="$input/test.attribute(Name('attr2')).string()"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="attribute">
+    <o:param name="attribute" type="Attribute"/>
+    <doc:p>Set an Element attribute</doc:p>
+    <java:code>
+      attributes.put(attribute.getName(), attribute);
+      attribute.setParent(this);
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="attributes">
+    <doc:p>Get all Element attributes</doc:p>
+    <java:code>
+      if(attributes.isEmpty())
+          return NodesetNode.EMPTY_SET;
+      Nodeset set = new org.oXML.xpath.iterator.DynamicNodeset();
+      java.util.Iterator it = attributes.values().iterator();
+      while(it.hasNext())
+        set.addNode((Node)it.next());
+      return new NodesetNode(set);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:variable name="input">
+	  <test foo="one" bar="two" foobar="three"/>
+	</o:variable>
+	<o:return select="count($input/test.attributes())"/>
+      </ut:definition>
+      <ut:result>3</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+	<o:variable name="input">
+	  <test foo="one" bar="two" foobar="three"/>
+	</o:variable>
+	<o:return select="$input/test.attributes()[name() = 'bar'].string()"/>
+      </ut:definition>
+      <ut:result>two</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="attribute">
+    <o:param name="name"/>
+    <o:param name="value"/>
+    <doc:p>Set the value of a named attribute.</doc:p>
+    <java:code>
+      Name nm = new Name(name.stringValue());
+      AttributeNode attribute = new AttributeNode(nm, value.stringValue());
+      attributes.put(nm, attribute);
+      attribute.setParent(this);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test.attribute('attr2', 'revalued')"/>
+        <o:return select="$input/test.attribute('attr2').string()"/>
+      </ut:definition>
+      <ut:result>revalued</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="attribute">
+    <o:param name="name" type="Name"/>
+    <o:param name="value"/>
+    <doc:p>
+      Set the value of a named attribute.
+    </doc:p>
+    <java:code>
+      Name nm = name.getName();
+      AttributeNode attribute = new AttributeNode(nm, value.stringValue());
+      attributes.put(nm, attribute);
+      attribute.setParent(this);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input/test.attribute(Name('urn:ExtremeProgramming', 'attr3'), 'revalued')"/>
+        <o:return select="$input/test.attribute(Name('urn:ExtremeProgramming', 'attr3'))"/>
+      </ut:definition>
+      <ut:result>revalued</ut:result>
+    </ut:test>
+  </o:function>
+
+<!--  <o:function name="boolean" java:name="_boolean">
+    <java:code>
+      return BooleanNode.TRUE;
+    </java:code>
+  </o:function> -->
+
+  <o:function name="string">
+    <doc:p>The string-value of an element node is the concatenation of the string-values of all text node descendants of the element node in document order.</doc:p>
+    <java:code>
+      StringBuffer buff = new StringBuffer();
+      Nodeset kids = this.getChildNodes();
+      for(int i=0; i&lt;kids.size(); ++i){
+        Node kid = (Node)kids.getNode(i);
+        buff.append(kid.stringValue());
+      }
+      return new StringNode(buff.toString());
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+	<o:return select="$input.string()"/>
+      </ut:definition>
+      <ut:result>onetwothree</ut:result>
+    </ut:test>
+  </o:function>
+
+</o:type>

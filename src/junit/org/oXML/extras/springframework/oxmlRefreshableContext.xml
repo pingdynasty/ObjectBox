@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+  <bean class="org.springframework.scripting.support.ScriptFactoryPostProcessor">
+    <property name="defaultRefreshCheckDelay" value="1"/>
+  </bean>
+
+  <bean id="calculator" class="org.oXML.extras.springframework.oXMLScriptFactory">
+    <constructor-arg value="classpath:org/oXML/extras/springframework/Calculator.oml"/>
+    <constructor-arg value="org.oXML.extras.springframework.Calculator"/>
+  </bean>
+  
+  <bean id="messenger" class="org.oXML.extras.springframework.oXMLScriptFactory">
+    <constructor-arg value="classpath:org/oXML/extras/springframework/Messenger.oml"/>
+    <constructor-arg value="org.oXML.extras.springframework.Messenger"/>
+    <property name="message" value="Hello o:XML!"/>
+  </bean>
+
+</beans>

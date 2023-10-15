@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/">
+
+  <o:type name="ex:Painter"/>
+
+  <o:type name="ex:Point">
+    <o:parent name="Nodeset"/>
+    <o:variable name="x"/>
+    <o:variable name="y"/>
+    <o:function name="ex:Point">
+      <o:param name="x"/>
+      <o:param name="y"/>
+      <o:do>
+        <x><o:eval select="$x"/></x>
+        <y><o:eval select="$y"/></y>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:type name="ex:Attribute">
+    <o:function name="ex:Attribute">
+      <o:param name="name"/>
+      <o:param name="value"/>
+      <o:do>
+        <attribute>
+          <name><o:eval select="$name"/></name>
+          <value><o:eval select="$y"/></value>
+        </attribute>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:type name="ex:Shape">
+    <o:variable name="name"/>
+    <o:variable name="attributes"/>
+    <o:variable name="position" select="ex:Point(0,0)"/>
+
+    <o:function name="ex:Shape">
+      <o:param name="name"/>
+      <o:do>
+        <o:variable name="position" select="ex:Point(0,0)"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="getName">
+      <o:do><o:return select="$name"/></o:do>
+    </o:function>
+
+    <o:function name="move">
+      <o:param name="dx"/>
+      <o:param name="dy"/>
+      <o:do>
+        <o:variable name="position" select="ex:Point($position/x + $dx, $position/y + $dy)"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="getPosition">
+      <o:do>
+        <o:return select="$position"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="setAttribute">
+      <o:param name="name"/>
+      <o:param name="value"/>
+      <o:do>
+        <o:variable name="attributes">
+          <o:eval select="$attributes[attribute/name != $name]"/>
+          <o:eval select="ex:Attribute($name, $value)"/>
+          <!--
+          <attribute>
+            <name><o:eval select="$name"/></name>
+            <value><o:eval select="$value"/></value>
+          </attribute>
+          -->
+        </o:variable>
+      </o:do>
+    </o:function>
+
+    <o:function name="paint">
+      <o:param name="painter" type="ex:Painter"/>
+      <o:do>
+        <o:eval select="$painter.setAttributes($attributes)"/>
+        <o:eval select="draw($painter)"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:type name="ex:Circle">
+    <o:parent name="ex:Shape"/>
+    <o:variable name="radius"/>
+
+    <o:function name="ex:Circle">
+      <o:param name="radius"/>
+      <o:parent name="ex:Shape" select="ex:Shape('Circle')"/>
+      <o:do>
+        <o:variable name="position" select="ex:Point(0,0)"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="getRadius">
+      <o:do>
+        <o:return select="$radius"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="getDiameter">
+      <o:do>
+        <o:return select="$radius * 2"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="draw">
+      <o:param name="painter" type="ex:Painter"/>
+      <o:do>
+        <o:eval select="$painter.circle(getPosition(), $radius)"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <!--
+  <awt xmlns:awt="http://www.o-xml.com/java/java.awt">
+    <o:resolve classname="java.awt.Graphics"/>
+
+    <o:type name="ex:AWTPainter">
+      <o:parent name="ex:Painter"/>
+      <o:variable name="graphics"/>
+
+      <o:function name="ex:AWTPainter">
+        <o:param name="graphics" select="awt:Graphics"/>
+        <o:do/>
+      </o:function>
+
+      <o:function name="circle">
+        <o:param name="position" type="ex:Position"/>
+        <o:param name="radius"/>
+        <o:do>
+          <o:eval select="$graphics.drawArc($position/x, $position/y, $radius, $radius, 0, 0)"/>
+        </o:do>
+      </o:function>
+    </o:type>
+
+    <o:variable name="painter" select="ex:Painter(awt:Graphics())"/>
+
+  </awt>
+  -->
+
+  <!--****************************************************************************************************-->
+  <shape>
+    <o:variable name="shape" select="ex:Shape('shapeless')"/>
+    <o:eval select="$shape.move(10,5)"/>
+    <o:eval select="$shape.getPosition()"/>
+  </shape>
+
+  <circle>
+    <o:variable name="circle" select="ex:Circle(4)"/>
+    <move><o:eval select="$circle.move(10,15)"/></move>
+    <name><o:eval select="$circle.getName()"/></name>
+    <position><o:eval select="$circle.getPosition()"/></position>
+    <diameter><o:eval select="$circle.getDiameter()"/></diameter>
+  </circle>
+
+</program>

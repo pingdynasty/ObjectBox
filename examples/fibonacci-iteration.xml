@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/" xmlns:ex="http://www.o-xml.org/examples/">
+
+  <o:procedure name="ex:fib">
+    <o:do>
+      <o:set low="1" high="1"/>
+      <o:while test="string($low) != 'Infinity' ">
+        <o:log msg="{$low}"/>
+        <fib><o:eval select="$low"/></fib>
+        <o:set tmp="$high"/>
+        <o:set high="$high + $low"/>
+        <o:set low="$tmp"/>
+      </o:while>
+      <fib><o:eval select="$high"/></fib>
+    </o:do>
+  </o:procedure>
+
+  <fibonacci>
+    <ex:fib/>
+  </fibonacci>
+
+</o:program>

@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<o:type name="SystemError" java:class="SystemErrorNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    Represents a system error.
+  </doc:p>
+
+  <o:parent name="Exception"/>
+
+  <o:variable name="exception" java:class="Throwable"/>
+
+  <o:constructor>
+    <o:param name="other" type="SystemError"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      exception = other.exception;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public SystemErrorNode(Throwable exception){
+        this();
+	this.exception = exception;
+    }
+
+    public Throwable getThrowable(){
+	return exception;
+    }
+
+    public String toString(){
+	return super.toString()+'&lt;'+stringValue()+'&gt;';
+    }
+
+    public String getStackTrace(){
+        java.io.StringWriter out = new java.io.StringWriter();
+	exception.printStackTrace(new java.io.PrintWriter(out));
+	return out.toString();
+    }
+</java:code>
+
+  <!--
+  <o:function name="native">
+    <doc:p>
+      Get the native exception or error that caused this system error.
+    </doc:p>
+    <java:code>
+    </java:code>
+  </o:function>
+  -->
+
+  <o:function name="message">
+    <doc:p>Get a message explaining the cause of the <doc:type/>.</doc:p>
+    <java:code>
+      return new StringNode(exception.getMessage());
+    </java:code>
+  </o:function>
+
+  <o:function name="string">
+    <java:code>
+      return new StringNode("System Error: "+exception.toString());
+    </java:code>
+  </o:function>
+
+  <o:function name="stacktrace">
+    <doc:p>
+      Get the native exception stacktrace.
+    </doc:p>
+    <java:code>
+      return new StringNode(this.getStackTrace());
+    </java:code>
+  </o:function>
+</o:type>
+

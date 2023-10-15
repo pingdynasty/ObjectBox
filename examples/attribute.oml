@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<!-- demonstrates creating dynamic elements and attributes -->
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:element name="output" namespace="urn:test">
+    <o:attribute name="lang" value="sum: {2+2}"/>
+    the start <o:text>the middle</o:text> the end
+  </o:element>
+
+</o:program>

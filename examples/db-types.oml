@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:ex="http://www.o-xml.org/examples/"
+	   xmlns:db="http://www.o-xml.com/db/">
+  <o:param name="db" select="'hsql'"/>
+
+  <o:choose>
+    <o:when test="$db = 'hsql'">
+      <!-- HSQL connection, in-memory test db -->
+      <db:connection log="true">
+        <db:url>jdbc:hsqldb:mem:test</db:url>
+        <db:driver>org.hsqldb.jdbcDriver</db:driver>
+        <db:username>sa</db:username>
+      </db:connection>
+      <db:execute sql="create table users(id identity, name varchar(30), active boolean)"/>
+    </o:when>
+    <o:when test="$db = 'mysql'">
+      <!-- MySQL connection, test db -->
+      <db:connection log="true">
+        <db:url>jdbc:mysql://localhost:3306/test</db:url>
+        <db:driver>com.mysql.jdbc.Driver</db:driver>
+      </db:connection>
+      <o:catch>
+        <db:execute sql="drop table users"/>
+      </o:catch>
+      <db:execute sql="create table users(id int primary key auto_increment, name varchar(30), active boolean)"/>
+    </o:when>
+  </o:choose>
+
+  <db:execute sql="insert into users(name, active) values('Evariste', true)"/>
+  <db:execute sql="insert into users(name, active) values('Pierre', false)"/>
+  <db:execute sql="insert into users(name, active) values('Leonhard', true)"/>
+
+  <o:type name="User">
+    <o:parent name="Element"/>
+
+    <o:variable name="Id" type="Number"/>
+    <o:variable name="Name" type="String"/>
+    <o:variable name="Active" type="Boolean"/>
+
+    <o:constructor>
+      <o:param name="Id" type="Number"/>
+      <o:param name="Name" type="String"/>
+      <o:param name="Active" type="Boolean"/>
+      <o:parent name="Element" select="Element('User')"/>
+      <o:do/>
+    </o:constructor>
+
+    <o:function name="GetId">
+      <o:do><o:return select="$Id"/></o:do>
+    </o:function>
+
+    <o:function name="GetName">
+      <o:do><o:return select="$Name"/></o:do>
+    </o:function>
+
+    <o:function name="IsActive">
+      <o:do><o:return select="$Active"/></o:do>
+    </o:function>
+     
+  </o:type>
+
+  <db:query name="findUsers">
+    <db:param name="name" type="String"/>
+    <db:sql>select * from users where name like {$name}</db:sql>
+    <db:result>
+      <o:eval select="User($id, $name, $active)"/>
+    </db:result>
+  </db:query>
+
+  <o:variable name="users">
+    <db:call query="findUsers" name="'Pierre'"/>
+  </o:variable>
+
+  <o:assert test="$users/User/Name = 'Pierre'"/>
+  <o:assert test="$users.GetId() = 1 or $users.GetId() = 2"/>
+  <o:assert test="not($users.IsActive())"/>
+  <o:assert test="$users.IsActive() = false()"/>
+
+  <o:assert test="$users.GetId().type() = 'Number'"/>
+  <o:assert test="$users.GetName().type() = 'String'"/>
+  <o:assert test="$users.IsActive().type() = 'Boolean'"/>
+
+  <o:variable name="users">
+    <db:call query="findUsers" name="'Leonhard'"/>
+  </o:variable>
+
+  <o:assert test="$users.GetId() = 2 or $users.GetId() = 3"/>
+  <o:assert test="$users.GetName() = 'Leonhard'"/>
+  <o:assert test="$users.IsActive()"/>
+
+  <o:variable name="users">
+    <db:call query="findUsers" name="'%e'"/>
+  </o:variable>
+
+  <o:assert test="count($users) = 2"/>
+
+</o:program>

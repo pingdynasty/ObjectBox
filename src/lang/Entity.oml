@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<o:type name="Entity" java:class="EntityNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    An Entity object represents a parsed or unparsed Entity from an
+    XML Document Type.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="name" java:class="String"/>
+  <o:variable name="publicId" java:class="String"/>
+  <o:variable name="systemId" java:class="String"/>
+  <o:variable name="notationName" java:class="String"/>
+
+  <o:constructor>
+    <o:param name="other" type="Entity"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+	name = other.name;
+	publicId = other.publicId;
+	systemId = other.systemId;
+        notationName = other.notationName;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public EntityNode(String name, String publicId, 
+                      String systemId, String notationName){
+        this();
+        this.name = name;
+	this.publicId = publicId;
+	this.systemId = systemId;
+        this.notationName = notationName;
+    }
+
+    public String getEntityName() {
+        return name;
+    }
+
+    public String getNotationName() {
+        return notationName;
+    }
+
+    public String getSystemId(){
+        return systemId;
+    }
+
+    public String getPublicId(){
+        return publicId;
+    }
+</java:code>
+
+  <o:function name="name" type="Name">
+    <doc:p>Get the name of this entity.</doc:p>
+    <java:code>
+      return new NameNode(new Name(name));
+    </java:code>
+  </o:function>
+
+  <o:function name="notation" type="String">
+    <doc:p>Get the notation name of this <doc:type/>.</doc:p>
+    <java:code>
+      return new StringNode(name);
+    </java:code>
+  </o:function>
+
+  <o:function name="systemId" type="String">
+    <doc:p>Get the system ID of this <doc:type/>.</doc:p>
+    <java:code>
+      return new StringNode(systemId);
+    </java:code>
+  </o:function>
+
+  <o:function name="publicId" type="String">
+    <doc:p>Get the public ID of this <doc:type/>.</doc:p>
+    <java:code>
+      return new StringNode(publicId);
+    </java:code>
+  </o:function>
+
+</o:type>

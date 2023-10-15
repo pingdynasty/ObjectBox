@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<o:type name="Program"
+  xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:comment>
+    Root reflection type. see function program(): Program
+  </o:comment>
+
+  <o:parent name="Element"/>
+
+  <java classname="ProgramNode" extends="ElementNode">
+
+    //    private Program program;
+    private java.util.Map types;
+    //    private Functions functions;
+
+    public ProgramNode(java.util.Map types){
+      super(this, new Name("program"));
+      this.types = types;
+
+      Log.trace("program: "+this.getType().getName());
+
+      java.util.Iterator it = types.values().iterator();
+      while(it.hasNext()){
+        Type type = (Type)it.next();
+        Log.trace("type: "+type.getName());
+        addChildNode(new TypeNode(type));        
+      }
+    //      functions = new Functions(); // tbd
+    }
+
+    public java.util.Map getTypes(){
+      return types;
+    }
+  </java>
+
+  <o:function name="type">
+    <o:param name="name" type="Name"/>
+    <java>
+      return (TypeNode)target.getTypes().get(name.getName());
+    </java>
+  </o:function>
+
+  <o:function name="type">
+    <o:param name="name"/>
+    <java>
+      return (TypeNode)target.getTypes().get(new Name(name.stringValue()));
+    </java>
+  </o:function>
+
+  <!--
+  <o:function name="functions">
+  </o:function>
+
+  <o:function name="function">
+    <o:param name="name" type="Name"/>
+    <java>
+      return target.getFunctions().getFunction(name.getName()); ???
+      not a node - tbd
+    </java>
+  </o:function>
+
+  <o:function name="procedures">
+  </o:function>
+
+  <o:function name="procedure">
+    <o:param name="name"/>
+  </o:function>
+
+  <o:function name="parameters">
+  </o:function>
+
+  <o:function name="parameter">
+    <o:param name="name"/>
+  </o:function>
+
+  <o:function name="document">
+    : Document (the program as nodeset?)
+  </o:function>
+
+  <o:function name="run">
+       here we go
+  </o:function>
+  -->
+
+  <!-- mutators -->
+  <!--
+  <o:function name="add">
+    <o:param name="type" type="Type"/>
+  </o:function>
+
+  <o:function name="add">
+    <o:param name="function" type="Function"/>
+  </o:function>
+
+  <o:function name="add">
+    <o:param name="procedure" type="Procedure"/>
+  </o:function>
+  -->
+  <!-- or use Type.remove() if Type.parent() is program -->
+  <!--
+  <o:function name="remove">
+    <o:param name="type" type="Type"/>
+  </o:function>
+
+  <o:function name="remove">
+    <o:param name="function" type="Function"/>
+  </o:function>
+
+  <o:function name="remove">
+    <o:param name="procedure" type="Procedure"/>
+  </o:function>
+  -->
+</o:type>
+

@@ -1,0 +1,12 @@
+<o:do xmlns:o="http://www.o-xml.org/lang/">
+<o:eval select="ProcessingInstruction('xml-stylesheet', 'href=&quot;eight-queens.xsl&quot; type=&quot;text/xsl&quot;')"/>
+<program xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:m="http://www.o-xml.com/mine">
+
+<o:variable name="i" select="10"/>
+<o:while test="$i &gt; 0">
+<o:log msg="var {$arg0}..."/>
+<o:variable name="i" select="$i - 1"/>
+</o:while>
+</program>
+</o:do>

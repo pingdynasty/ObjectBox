@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<o:type name="ProcessingInstruction" java:class="ProcessingInstructionNode"
+	xmlns:o="http://www.o-xml.org/lang/" 
+	xmlns:java="http://www.o-xml.org/java"
+	xmlns:doc="http://www.o-xml.org/namespace/document/"
+	xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A ProcessingInstruction object represents an XML ProcessingInstruction node.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:constructor>
+    <o:param name="other" type="ProcessingInstruction"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      target = other.target;
+      data = other.data;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+<![CDATA[
+    private String target;
+    private String data;
+
+    public ProcessingInstructionNode(String target, String data){
+        this();
+        this.target = target;
+        this.data = data;
+    }
+
+    public String getTarget(){
+        return target;
+    }
+
+    public String getData(){
+        return data;
+    }
+
+    public String toString(){
+        return super.toString()+'<'+target+','+data+'>';
+    }
+]]></java:code>
+
+  <ut:dataset name="xsl-pi">
+    <?xml-stylesheet href="eight-queens.xsl" type="text/xsl"?>
+  </ut:dataset>
+  <ut:dataset name="xsl-pi-dyn">
+    <o:processing-instruction target="xml-stylesheet">href="eight-queens.xsl" type="text/xsl"</o:processing-instruction>
+  </ut:dataset>
+
+  <o:constructor>
+    <o:param name="target"/>
+    <o:param name="value"/>
+    <java:code>
+      this.target = target.stringValue();
+      data = value.stringValue();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="name" type="Name">
+    <doc:p>Get the target of this <doc:type/> as a name.</doc:p>
+    <java:code>
+      return new NameNode(new Name(target));
+    </java:code>
+  </o:function>
+
+  <o:function name="target">
+    <doc:p>Get the target of this ProcessingInstruction.</doc:p>
+    <doc:return>a String node.</doc:return>
+    <java:code>
+      return new StringNode(target);
+    </java:code>
+    <ut:test>
+      <ut:input ref="xsl-pi"/>
+      <ut:definition>
+        <o:return select="$input.target()"/>
+      </ut:definition>
+      <ut:result>xml-stylesheet</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="data">
+    <doc:p>Get the data of this ProcessingInstruction.</doc:p>
+    <doc:return>a String node.</doc:return>
+    <java:code>
+      return new StringNode(data);
+    </java:code>
+    <ut:test>
+      <ut:input ref="xsl-pi"/>
+      <ut:definition>
+        <o:return select="$input.data()"/>
+      </ut:definition>
+      <ut:result>href="eight-queens.xsl" type="text/xsl"</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <doc:p>Get the data of this ProcessingInstruction.</doc:p>
+    <doc:same>$this.data()</doc:same>
+    <java:code>
+      return new StringNode(data);
+    </java:code>
+    <ut:test>
+      <ut:input ref="xsl-pi"/>
+      <ut:definition>
+        <o:return select="$input.string()"/>
+      </ut:definition>
+      <ut:result>href="eight-queens.xsl" type="text/xsl"</ut:result>
+    </ut:test>
+  </o:function>
+
+</o:type>

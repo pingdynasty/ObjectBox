@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+<o:type name="Document" java:class="DocumentNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A Document object represents an XML Document node.
+  </doc:p>
+
+  <o:parent name="Parent"/>
+
+  <o:variable name="doctype" type="DocumentType"/>
+
+  <o:constructor>
+    <o:param name="other" type="Document"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      if(other.doctype != null)
+        doctype = (DocumentTypeNode)other.doctype.copy(deep);
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public DocumentTypeNode getDocumentType(){
+        return doctype;
+    }
+
+    public void setDocumentType(DocumentTypeNode doctype){
+        this.doctype = doctype;
+    }
+  </java:code>
+
+  <o:constructor>
+    <java:code/>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="doctype" type="DocumentType"/>
+    <java:code>
+        this.doctype = doctype;
+    </java:code>
+  </o:constructor>
+
+<!--   <o:function name="append">
+    <o:param name="node"/>
+    <doc:p>
+      Add a node to the end of this Documents set of child nodes.
+    </doc:p>
+    <doc:param>the node to append</doc:param>
+    <java:code>
+      this.addChildNode(node);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set doc="Document()"/>
+        <o:do select="$doc.append(Element('root'))"/>
+        <o:return select="name($doc/*)"/>
+      </ut:definition>
+      <ut:result>root</ut:result>
+    </ut:test>
+  </o:function> -->
+
+  <o:function name="doctype">
+    <doc:p>Get the DocumentType of this document.</doc:p>
+    <java:code>
+      if(doctype == null)
+        return NodesetNode.EMPTY_SET;
+      else
+	return doctype;
+    </java:code>
+  </o:function>
+
+  <o:function name="parent">
+    <o:param name="parent" type="Parent"/>
+    <java:code>
+      throw new RuntimeException("Hierarchy error: "+getType().getName()+
+                                 " can have no parent");
+    </java:code>
+  </o:function>
+
+  <o:function name="parent">
+    <java:code>
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+ 
+  <o:function name="document">
+    <doc:p>Get the owning document node.</doc:p>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="string">
+    <doc:p>Get the String value of this <doc:type/>.</doc:p>
+    <doc:see>XPath v1.0 4.2 String Functions</doc:see>
+    <doc:p>The string-value of the root node is the concatenation of the string-values of all text node descendants of the root node in document order.</doc:p>
+    <java:code>
+      StringBuffer buff = new StringBuffer();
+      Nodeset kids = getChildNodes();
+      for(int i=0; i&lt;kids.size(); ++i){
+        Node kid = (Node)kids.getNode(i);
+        buff.append(kid.stringValue());
+      }
+      return new StringNode(buff.toString());
+    </java:code>
+  </o:function>
+</o:type>

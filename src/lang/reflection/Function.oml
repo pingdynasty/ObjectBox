@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+<o:type name="Function"
+  xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:comment>
+    the first argument to bind on a type function is the type instance.
+    bind(Node) returns a copy of the function.
+  </o:comment>
+
+  <o:parent name="Element"/>
+
+  <java classname="FunctionNode" extends="ElementNode">
+    private Function fun;
+    private ParameterNode[] params;
+
+    public FunctionNode(Function fun){
+      super(this, new Name("function"));
+      this.fun = fun;
+      setAttribute(new Name("name"), fun.getName().toString());
+      setAttribute(new Name("declaringType"),
+                   fun.getDeclaringType().getName().toString());
+      Type[] signature = fun.getSignature();
+      params = new ParameterNode[signature.length + 1];
+      params[0] = new ParameterNode(fun.getDeclaringType());
+      for(int i=1; i&lt;params.length; ++i){
+        params[i] = new ParameterNode(signature[i-1]);
+        addChildNode(params[i]);
+      }
+    }
+
+    protected FunctionNode(FunctionNode other, boolean deep){
+      super(other, deep);
+      fun = other.fun;
+    //      if(deep){
+        params = new ParameterNode[other.params.length];
+        for(int i=0; i&lt;params.length; ++i)
+          params[i] = (ParameterNode)other.params[i].copy(deep);
+    //      }
+    }
+
+    public Function getFunction(){
+      return fun;
+    }
+
+    public ParameterNode[] getParameters(){
+      return params;
+    }
+
+    public Node copy(boolean deep){
+      return new FunctionNode(this, deep);
+    }
+
+    public Node call(Node[] args, RuntimeContext context)
+	throws ObjectBoxException {
+	Node[] arguments = new Node[params.length - 1];
+	if(!params[0].bound()){
+	    // node instance not bound
+	    if(args.length != params.length)
+		throw new FunctionException("wrong number of parameters!");
+	    for(int i=1; i&lt; args.length; ++i)
+		arguments[i-1] = args[i];
+	    return fun.invoke(args[0], arguments, context);
+	}
+	int i=1;
+	for(;i &lt; params.length &amp;&amp; params[i].bound(); ++i)
+  	    arguments[i-1] = params[i].getParameterValue();
+
+	if(i + args.length != params.length)
+	    throw new FunctionException("wrong number of parameters!");
+	for(int j=0; j&lt;args.length; ++j)
+	    arguments[i+j-1] = args[j];
+        return fun.invoke(params[0].getParameterValue(), arguments, context);
+    }
+
+    public FunctionNode bind(Node[] args)
+	throws ObjectBoxException {
+      FunctionNode copy = new FunctionNode(this, false);
+      boolean bound = false;
+      ParameterNode[] params = copy.params;
+      int i=0;
+      // ignore the already bound parameters
+      while(i&lt;params.length &amp;&amp; params[i].bound())
+	  ++i;
+
+      if(params.length &lt; i+args.length)
+	  throw new FunctionException("too many parameters!");
+
+      // bind the args we've been given
+      for(int j=0; j&lt;args.length; ++j)
+	  params[i+j].bind(args[j]);
+
+      // add remaining parameters as children to the new function
+      for(int k=i+args.length; k&lt;params.length; ++k)
+	  copy.addChildNode(params[k]);
+
+      return copy;
+    }
+
+    /**
+      * bind a particular parameter to a particular value
+      */
+    public FunctionNode bind(ParameterNode param, Node value)
+	throws ObjectBoxException {
+      FunctionNode copy = new FunctionNode(this, false);
+      for(int i=0; i&lt;params.length; ++i){
+        if(params[i] == param)
+          copy.params[i].bind(value);
+        else if(!params[i].bound())
+	  copy.addChildNode(copy.params[i]);
+      }
+      return copy;
+    }
+  </java>
+  <!-- can't create functions willy-nilly! get the statements from somewhere.
+  <o:function name="Function">
+    <o:param name="name" type="Name"/>
+    <o:param name="sig"/>
+    <java>
+      Nodeset kids = sig.getChildNodes();
+      Type[] signature = new Type[kids.size()];
+      for(int i=0; i&lt;signature.length; ++i){
+         TypeNode type = (TypeNode)kids.get(i);
+         signature[i] = type.getType();
+      }
+      return new FunctionNode(name.getName(), signature)
+    </java>
+  </o:function>
+  -->
+
+  <!-- bind a single argument -->
+  <o:function name="bind">
+    <o:param name="arg"/>
+    <!--    <o:param .. /> tbd... -->
+    <java>
+      return target.bind(new Node[]{arg});
+    </java>
+  </o:function>
+
+  <o:function name="bind">
+    <o:param name="arg1"/>
+    <o:param name="arg2"/>
+    <java>
+      return target.bind(new Node[]{arg1, arg2});
+    </java>
+  </o:function>
+
+  <o:function name="bind">
+    <o:param name="arg1"/>
+    <o:param name="arg2"/>
+    <o:param name="arg3"/>
+    <java>
+      return target.bind(new Node[]{arg1, arg2, arg3});
+    </java>
+  </o:function>
+
+  <!-- no longer needed, check param kids instead?? 
+       they do not include node instance -->
+  <o:function name="binds">
+    : Nodeset#Parameter
+    <java>
+      Node result = new NodesetNode();
+      ParameterNode[] params = target.getParameters();
+      for(int i=0; i&lt;params.length; ++i){
+        if(!params[i].bound()){
+          result.addChildNode(params[i]);
+        }
+      }
+      return result;
+    </java>
+  </o:function>
+
+  <!-- invoke (takes no args!) -->
+  <o:function name="call">
+    <!-- tbd take any number of args -->
+    <java>
+      return target.call(new Node[0], context);
+    </java>
+  </o:function>
+
+  <o:function name="call">
+    <o:param name="arg"/>
+    <java>
+      return target.call(new Node[]{arg}, context);
+    </java>
+  </o:function>
+
+  <o:function name="call">
+    <o:param name="arg1"/>
+    <o:param name="arg2"/>
+    <java>
+      return target.call(new Node[]{arg1, arg2}, context);
+    </java>
+  </o:function>
+
+  <o:function name="call">
+    <o:param name="arg1"/>
+    <o:param name="arg2"/>
+    <o:param name="arg3"/>
+    <java>
+      return target.call(new Node[]{arg1, arg2, arg3}, context);
+    </java>
+  </o:function>
+
+  <o:function name="name">
+    <java>
+      return new NameNode(target.getFunction().getName());
+    </java>
+  </o:function>
+  <!--
+  <o:function name="clear">
+    <java>
+      ParameterNode[] params = target.getParameters();
+      for(int i=0; i&lt;params.length; ++i)
+        params[i].clear();
+      return target;
+    </java>
+  </o:function>
+  -->
+  <!--
+  <o:function name="join">
+    <o:param name="function" type="Function/>
+      : JoinPoint
+  </o:function>
+
+  <o:function name="return">
+    : Variable
+  </o:function>
+  -->
+</o:type>
+

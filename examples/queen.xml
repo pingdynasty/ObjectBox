@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="queen.xsl" type="text/xsl"?>
+<program xmlns:o="http://www.o-xml.org/lang" xmlns:m="http://www.o-xml.com/mine">
+  <o:type name="Queen">
+    <o:variable name="row" select="1"/>
+    <o:variable name="column"/>
+    <o:variable name="neighbour"/>
+    <o:function name="Queen">
+      <o:param name="column" type="Number"/>
+      <o:param name="neighbour"/>
+      <o:do>
+       <!-- column and neighbour are automatically set from their parameter -->
+       <!-- values, row is set from default value -->
+        <o:variable name="row" select="1"/>
+        <queen>queen <o:value-of select="$column"/>, <o:value-of select="$row"/>.</queen>
+      </o:do>
+    </o:function>
+
+    <o:function name="findSolution">
+      <o:do>
+        <o:while test="$neighbour and $neighbour.canAttach($row, $column)">
+          <o:if test="not($this.advance())">
+            <o:return select="false()"/>
+          </o:if>
+        </o:while>
+        <o:return select="true()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="stat">
+      <o:do>
+        <o:value-of select="concat('queen: ', $column, ',', $row)"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="advance">
+      <o:do>
+        <o:choose>
+          <o:when test="$row &lt; 8">
+            <o:variable name="row" select="$row + 1"/>
+            <o:return select="$this.findSolution()"/>
+          </o:when>
+          <o:when test="$neighbour">
+            <o:if test="not($neighbour.advance())">
+              <o:return select="false()"/>
+            </o:if>
+            <o:if test="not($neighbour.findSolution())">
+              <o:return select="false()"/>
+            </o:if>
+          </o:when>
+          <o:otherwise>
+              <o:return select="false()"/>
+          </o:otherwise>
+        </o:choose>
+        <o:variable name="row" select="1"/>
+        <o:return select="$this.findSolution()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="canAttach">
+      <o:param name="testRow"/>
+      <o:param name="testColumn"/>
+      <o:do>
+        <o:variable name="columnDifference" select="$testColumn - $column"/>
+        <o:choose>
+          <o:when test="$row = $testRow or 
+                        ($row + $columnDifference = $testRow) or
+                        ($row - $columnDifference = $testRow)">
+            <o:return select="true()"/>
+          </o:when>
+          <o:when test="$neighbour"> 
+            <o:return select="$neighbour.canAttach($testRow, $testColumn)"/>
+          </o:when>
+        </o:choose>
+        <o:return select="false()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="paint">
+      <o:do>
+        <o:if test="$neighbour">
+          <o:copy-of select="$neighbour.paint()"/>
+        </o:if>
+        <queen>
+          <column><o:value-of select="$column"/></column>
+          <row><o:value-of select="$row"/></row>
+        </queen>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:type name="QueenSolver">
+    <o:variable name="lastQueen"/>
+    <o:function name="QueenSolver">
+      <o:do>
+        <o:variable name="i" select="1"/>
+        <o:while test="$i &lt;= 8">
+          <o:variable name="lastQueen" select="Queen($i, $lastQueen)"/>
+          <o:copy-of select="$lastQueen.findSolution()"/>
+          <o:variable name="i" select="$i+1"/>
+        </o:while>
+      </o:do>
+    </o:function>
+
+    <o:function name="paint">
+      <o:do>
+        <o:copy-of select="$lastQueen.paint()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="advance">
+      <o:do>
+        <o:copy-of select="$lastQueen.advance()"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:variable name="solver" select="QueenSolver()"/>
+  <solution>
+    <o:copy-of select="$solver.paint()"/>
+  </solution>
+</program>

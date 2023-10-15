@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang/" xmlns:m="http://www.o-xml.com/mine">
+
+  <o:type name="m:Map">
+    <o:variable name="items"/>
+    <!-- ctor -->
+    <o:function name="m:Map">
+      <o:do>
+      </o:do>
+    </o:function>
+    <o:function name="get">
+      <o:param name="key"/>
+      <o:do>
+        <o:return select="$items/item[key = $key]/value/node()"/>
+      </o:do>
+    </o:function>
+    <o:function name="put">
+      <o:param name="key"/>
+      <o:param name="value"/>
+      <o:do>
+        <o:variable name="items">
+          <o:copy-of select="$items/item[key != $key]"/>
+          <item>
+            <key><o:copy-of select="$key"/></key>
+            <value><o:copy-of select="$value"/></value>
+          </item>
+        </o:variable>
+      </o:do>
+    </o:function>
+    <o:function name="dump">
+      <o:do>
+        <o:copy-of select="$items"/>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <run>
+    <o:variable name="map" select="m:Map()"/>
+    <o:variable name="var1" select="'piece of string!'"/>
+    <o:variable name="var2" select="'more string!'"/>
+    <nothing>
+      <o:copy-of select="$map.put('key2', $var1)"/>
+      <o:copy-of select="$map.put('key1', $var1)"/>
+      <o:copy-of select="$map.put('key2', $var2)"/>
+    </nothing>
+    <var1>
+      <o:copy-of select="$map.get('key1')"/>
+    </var1>
+    <var2>
+      <o:copy-of select="$map.get('key2')"/>
+    </var2>
+    <compare>
+    <o:copy-of select="concat('compare: ', $map.get('key1') = $var1)"/>
+    </compare>
+    <content>
+      <o:copy-of select="$map.dump()"/>
+    </content>
+  </run>
+</program>

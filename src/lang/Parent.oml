@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<o:type name="Parent" java:class="ParentNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/"
+  xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <doc:p><doc:type/> is an abstract type for nodes that may have childnodes.</doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="kids" java:class="Nodeset"/>
+
+  <o:constructor>
+    <o:param name="other" type="Parent"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      kids = new org.oXML.xpath.iterator.DynamicNodeset();
+      if(deep){
+        for(int i=0; i &lt; other.kids.size(); ++i){
+	  Node kid = other.kids.getNode(i).copy(true);
+	  kids.addNode(kid.cast());
+	  kid.setParent(me);
+	}
+      }
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public ParentNode(AbstractNode me, Type type, Nodeset kids){
+      super(me, type);
+      this.kids = kids;
+    }
+
+    public Nodeset getNodeset(){
+        return kids;
+    }
+  </java:code>
+
+  <o:constructor>
+    <java:code>
+      kids = new org.oXML.xpath.iterator.DynamicNodeset();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="prepend">
+    <o:param name="child"/>
+    <doc:p>
+      Add a node to the beginning of this <doc:type/> set of child nodes.
+    </doc:p>
+    <doc:param>the node to prepend</doc:param>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      kids.insertNode(0, child.cast());
+      child.setParent(me);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input.prepend(Element('prepended'))"/>
+        <!-- check that there are 3 + 1 child elements -->
+        <o:assert test="count($input/test/*) = 4"/>
+        <!-- check that prepended is first -->
+	<o:return select="$input/test/*[1].name()"/>
+      </ut:definition>
+      <ut:result>prepended</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="append">
+    <o:param name="child"/>
+    <doc:p>
+      Add a node to the end of this <doc:type/>s set of child nodes.
+    </doc:p>
+    <doc:param>the node to append</doc:param>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      kids.addNode(child.cast());
+      child.setParent(me);
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:do select="$input.append(Element('appended'))"/>
+        <!-- check that there are 3 + 1 child elements -->
+        <o:assert test="count($input/test/*) = 4"/>
+        <!-- check that appended is last -->
+	<o:return select="$input/test/*[last()].name()"/>
+      </ut:definition>
+      <ut:result>appended</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="append">
+    <o:param name="child" type="Nodeset"/>
+    <doc:p>Append the child nodes of the given nodeset.</doc:p>
+    <java:code>
+      Nodeset sub = child.getNodeset();
+      for(int i=0; i &lt; sub.size(); ++i){
+        Node kid = sub.getNode(i);
+        kids.addNode(kid.cast());
+        kid.setParent(me);
+      }
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="insert" java:throws="ObjectBoxException">
+    <o:param name="position" type="Number"/>
+    <o:param name="child"/>
+    <java:code>
+      int pos = (int)position.getDouble();
+      if(pos &lt; 0 || pos > kids.size())
+ 	 throw new ObjectBoxException
+ 	   ("Hierarchy error: Index out of bounds: "+pos);
+      if(child.getType().instanceOf(NodesetNode.TYPE)){
+	 // insert all nodeset child nodes
+	 NodeIterator nit = child.getChildNodes().getIterator();
+	 for(Node kid = nit.nextNode(); kid != null; kid = nit.nextNode()){
+	   kids.insertNode(pos++, kid.cast());
+	   kid.setParent(me);
+	}
+      }else{
+        kids.insertNode(pos, child.cast());
+	child.setParent(me);
+      }
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="remove">
+    <o:param name="child"/>
+    <java:code>
+	int pos = kids.indexOf(child.cast());
+	if(pos &lt; 0)
+	    throw new RuntimeException
+		("Hierarchy error: No such child node: "+child);
+	kids.removeNode(pos);
+	child.setParent(null);
+	return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="replace">
+    <o:param name="current"/>
+    <o:param name="replacement"/>
+    <java:code>
+	int pos = kids.indexOf(current.cast());
+	if(pos &lt; 0)
+	    throw new RuntimeException
+		("Hierarchy error: No such child node: "+current);
+	kids.removeNode(pos);
+	insert(pos, replacement);
+	return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="count">
+    <java:code>
+      return new NumberNode(kids.size());
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:return select="$input/test.count()"/>
+      </ut:definition>
+      <ut:result>3</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="insertBefore" java:throws="ObjectBoxException">
+    <o:param name="current"/>
+    <o:param name="other"/>
+    <java:code>
+      int pos = kids.indexOf(current.cast());
+      if(pos &lt; 0)
+ 	throw new ObjectBoxException
+	  ("Hierarchy error: No such child node: "+current);
+      insert(pos, other);
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="insertAfter" java:throws="ObjectBoxException">
+    <o:param name="current"/>
+    <o:param name="other"/>
+    <java:code>
+      int pos = kids.indexOf(current.cast());
+      if(pos &lt; 0)
+ 	throw new ObjectBoxException
+          ("Hierarchy error: No such child node: "+current);
+      insert(++pos, other);
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="nodes">
+    <doc:p>Get a nodeset containing the child nodes of this <doc:type/>, if any.</doc:p>
+    <java:code>
+      return new NodesetNode(kids);
+    </java:code>
+  </o:function>
+
+  <ut:dataset name="element">
+    <test attr1="one" attr2="two" ut:attr3="three">
+      <one>one</one>
+      <two>two</two>
+      <three>three</three>
+    </test>
+  </ut:dataset>
+
+  <o:function name="boolean" java:name="_boolean">
+    <java:code>
+      return BooleanNode.TRUE;
+    </java:code>
+    <ut:test>
+      <ut:input ref="element"/>
+      <ut:definition>
+        <o:assert test="$input/test/two.boolean()"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+</o:type>

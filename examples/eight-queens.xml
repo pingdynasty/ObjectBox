@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="eight-queens.xsl" type="text/xsl"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/"
+  xmlns:servlet="http://www.o-xml.com/servlet/"
+  xmlns:ex="http://www.o-xml.org/examples/">
+
+  <!-- define our types: Queen and QueenSolver -->
+  <o:type name="ex:Queen">
+    <!--    <o:parent name="Element"/> -->
+    <o:variable name="row" select="1"/>
+    <o:variable name="column"/>
+    <o:variable name="neighbour"/>
+
+    <o:function name="ex:Queen">
+      <!-- type constructor -->
+      <o:param name="column" type="Number"/>
+      <o:param name="neighbour"/>
+      <o:do>
+       <!-- column and neighbour are automatically set from their parameter -->
+       <!-- values, row is set from default value -->
+        <o:variable name="row" select="1"/>
+        <queen>queen <o:eval select="$column"/>, <o:eval select="$row"/>.</queen>
+      </o:do>
+    </o:function>
+
+    <o:function name="findSolution">
+      <o:do>
+        <o:while test="$neighbour and $neighbour.canAttach($row, $column)">
+          <o:if test="not($this.advance())">
+            <o:return select="false()"/>
+          </o:if>
+        </o:while>
+        <o:return select="true()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="stat">
+      <o:do>
+        <o:return select="concat('queen: ', $column, ',', $row)"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="advance">
+      <o:do>
+        <o:choose>
+          <o:when test="$row &lt; 8">
+            <o:variable name="row" select="$row + 1"/>
+            <o:return select="$this.findSolution()"/>
+          </o:when>
+          <o:when test="$neighbour">
+            <o:if test="not($neighbour.advance())">
+              <o:return select="false()"/>
+            </o:if>
+            <o:if test="not($neighbour.findSolution())">
+              <o:return select="false()"/>
+            </o:if>
+          </o:when>
+          <o:otherwise>
+              <o:return select="false()"/>
+          </o:otherwise>
+        </o:choose>
+        <o:variable name="row" select="1"/>
+        <o:return select="$this.findSolution()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="canAttach">
+      <o:param name="testRow"/>
+      <o:param name="testColumn"/>
+      <o:do>
+        <o:variable name="columnDifference" select="$testColumn - $column"/>
+        <o:choose>
+          <o:when test="$row = $testRow or 
+                        ($row + $columnDifference = $testRow) or
+                        ($row - $columnDifference = $testRow)">
+            <o:return select="true()"/>
+          </o:when>
+          <o:when test="$neighbour"> 
+            <o:return select="$neighbour.canAttach($testRow, $testColumn)"/>
+          </o:when>
+        </o:choose>
+        <o:return select="false()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="paint">
+      <o:do>
+        <o:if test="$neighbour">
+          <o:eval select="$neighbour.paint()"/>
+        </o:if>
+        <queen>
+          <column><o:eval select="$column"/></column>
+          <row><o:eval select="$row"/></row>
+        </queen>
+      </o:do>
+    </o:function>
+  </o:type>
+
+  <o:type name="ex:QueenSolver">
+    <o:variable name="lastQueen"/>
+
+    <!-- type constructor -->
+    <o:function name="ex:QueenSolver">
+      <o:do>
+        <o:variable name="i" select="1"/>
+        <o:while test="$i &lt;= 8">
+          <o:variable name="lastQueen" select="ex:Queen($i, $lastQueen)"/>
+          <o:do select="$lastQueen.findSolution()"/>
+          <o:variable name="i" select="$i+1"/>
+        </o:while>
+      </o:do>
+    </o:function>
+
+    <o:function name="paint">
+      <o:do>
+        <o:eval select="$lastQueen.paint()"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="advance">
+      <o:do>
+        <o:return select="$lastQueen.advance()"/>
+      </o:do>
+    </o:function>
+  </o:type>
+  <!-- end type definitions -->
+
+  <o:variable name="solver" select="ex:QueenSolver()"/>
+      
+  <solution>
+    <o:eval select="$solver.paint()"/>
+  </solution>
+
+</o:program>

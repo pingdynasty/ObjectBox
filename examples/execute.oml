@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/"
+  xmlns:java="http://www.o-xml.com/java/"
+  xmlns:db="http://www.o-xml.com/db/">
+
+  <db:query name="ex:fofo">
+    <db:param name="user" type="String"/>
+    <db:sql>select name, realname, email from users where name=[user]</db:sql>
+    <db:result>
+      <user username="[name]">
+        <name>[realname]</name>
+        <email>[email]</email>
+      </user>
+    </db:result>
+  </db:query>
+
+  <o:set username="'bullet'"/>
+  <o:set password="'bullet'"/>
+
+  <db:connection>
+    <db:url>jdbc:mysql://localhost:3306/bullet</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+    <db:username>{$username}</db:username>
+    <db:password>{$password}</db:password>
+    <db:pool minFree="0" maxFree="2"/>
+    <db:transaction retry="3"/>
+  </db:connection>
+
+  <o:variable name="id" select="666"/>
+  <o:variable name="name" select="'goofy &lt; > me'"/>
+
+  <db:execute sql="delete from users where id={$id}"/>
+
+  <db:execute>insert into users(id, name, realname) values({$id}, {db:quote($name)}, 'the one &amp; only goofball')</db:execute>
+
+  <db:call query="ex:fofo" user="$name"/>
+
+  <db:execute connection="db:connection" sql="delete from users where id={$id}"/>
+
+  <db:call query="ex:fofo" user="$name"/>
+
+</program>

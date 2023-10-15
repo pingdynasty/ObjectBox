@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<o:type name="Program" java:class="ProgramNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    <doc:type/> is an o:XML program.
+  </doc:p>
+
+  <o:variable name="program" java:class="org.oXML.engine.InterpretedProgram"/>
+
+  <o:constructor>
+    <o:param name="other" type="Program"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      program = other.program;
+      params.putAll(other.params);
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    private static final org.oXML.engine.ProgramProxy programproxy = 
+      new org.oXML.engine.ProgramProxy();
+
+    private java.util.Map params = new java.util.HashMap();
+
+    public ProgramNode(org.oXML.engine.InterpretedProgram program){
+      this();
+      this.program = program;
+    }
+  </java:code>
+
+  <o:constructor java:throws="ObjectBoxException">
+    <o:param name="systemId"/>
+    <doc:p>Load and compile a program from a file or network resource.</doc:p>
+    <doc:same>Program($systemId, true())</doc:same>
+    <java:code>
+      try{
+          program = programproxy.getProgram(systemId.stringValue());
+          program.loadExtension("org.oXML.extras.java.JavaExtensions");
+	  program.loadExtension("org.oXML.extras.db.DatabaseExtensions");
+	  program.loadExtension("org.oXML.extras.xinclude.XIncludeExtensions");
+          if(!program.compiled())
+              program.compile();
+      }catch(org.xml.sax.SAXException exc){
+          throw new ObjectBoxException(exc);
+      }catch(java.io.IOException exc){
+          throw new ObjectBoxException(exc);
+      }
+    </java:code>
+  </o:constructor>
+
+  <o:constructor java:throws="ObjectBoxException">
+    <o:param name="systemId"/>
+    <o:param name="defaultExtensions"/>
+    <doc:p>Load and compile a program from a file or network resource.</doc:p>
+    <doc:param name="defaultExtensions">If true, load the default language extensions.</doc:param>
+    <java:code>
+      try{
+          program = programproxy.getProgram(systemId.stringValue());
+          if(defaultExtensions.booleanValue()){
+	      program.loadExtension("org.oXML.extras.java.JavaExtensions");
+	      program.loadExtension("org.oXML.extras.db.DatabaseExtensions");
+	      program.loadExtension("org.oXML.extras.xinclude.XIncludeExtensions");
+          }
+          if(!program.compiled())
+              program.compile();
+      }catch(org.xml.sax.SAXException exc){
+          throw new ObjectBoxException(exc);
+      }catch(java.io.IOException exc){
+          throw new ObjectBoxException(exc);
+      }
+    </java:code>
+  </o:constructor>
+
+  <o:function name="setParameter"
+	      java:throws="ObjectBoxException">
+    <o:param name="name"/>
+    <o:param name="value"/>
+    <doc:p>Set a program parameter.</doc:p>
+    <java:code>
+      Name nm = new Name(name.stringValue());
+      params.put(nm, program.createParameter(nm, value));
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+
+  <o:function name="setParameter"
+	      java:throws="ObjectBoxException">
+    <o:param name="name" type="Name"/>
+    <o:param name="value"/>
+    <doc:p>Set a program parameter.</doc:p>
+    <java:code>
+      Name nm = name.getName();
+      params.put(nm, program.createParameter(nm, value));
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+
+  <o:function name="getParameterNames"
+	      java:throws="ObjectBoxException">
+    <doc:p>Set the names of all this program's parameters.</doc:p>
+    <java:code>
+      Name[] names = program.getParameterNames();
+      Nodeset nodes = new org.oXML.xpath.iterator.DynamicNodeset();
+      for(int i=0; i&lt;names.length;++i)
+          nodes.addNode(new NameNode(names[i]));
+      return new NodesetNode(nodes);
+    </java:code>
+  </o:function>
+
+  <o:function name="run"
+	      java:throws="ObjectBoxException">
+    <doc:p>Execute this <doc:type/>.</doc:p>
+    <doc:return>The generated program output or return value.</doc:return>
+    <java:code>
+        RuntimeContext ctxt = Threads.getContext();
+	Nodeset output = ctxt.pushOutputNodeset();
+        ctxt.hide();
+        java.util.Iterator it = params.values().iterator();
+        while(it.hasNext()){
+            Variable var = (Variable)it.next();
+            ctxt.setVariable(var);
+        }
+	try{
+	    // process
+	    Node value = program.run(ctxt);
+	    if(value != null)
+                return value;
+	}finally{
+	    // reset handler
+	    ctxt.popOutputNodeset();
+            ctxt.unhide();
+	}
+	return new NodesetNode(output);
+    </java:code>
+  </o:function>
+
+  <o:function name="systemId" type="String">
+    <java:code>
+      return new StringNode(program.getSystemId());
+    </java:code>
+  </o:function>
+
+  <o:function name="encoding" type="String">
+    <java:code>
+      return new StringNode(program.getEncoding());
+    </java:code>
+  </o:function>
+
+</o:type>
+

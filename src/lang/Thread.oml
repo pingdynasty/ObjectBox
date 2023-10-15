@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+<o:type name="Thread" java:class="ThreadNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>A <doc:type/> represents a thread or path of exection in a program.</doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:parent java:interface="Runnable"/>
+
+  <o:variable name="thread" java:class="Thread"/>
+<!--
+  <o:variable name="instance" java:class="Node"/> -->
+  <o:variable name="rc" java:class="org.oXML.engine.RuntimeContext"/>
+  <o:variable name="result" java:class="Node"/>
+  <o:variable name="run" java:class="Function"/>
+
+  <o:constructor>
+    <o:param name="other" type="Thread"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      throw new RuntimeException("Cannot copy Thread");
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+  private static Name RUN_NAME = new Name("run");
+  private static Type[] RUN_SIG = new Type[0];
+  private static Node[] RUN_ARGS = new Node[0];
+
+  public ThreadNode(Function run) {
+    this();
+    this.run = run;
+  }
+
+<!--
+  public ThreadNode(Node instance, org.oXML.engine.RuntimeContext rc)
+    throws ObjectBoxException {
+    super(instance.getType());
+    init(instance, rc);
+  }
+
+  public ThreadNode(Function run, org.oXML.engine.RuntimeContext rc) {
+    this();
+    this.run = run;
+    this.rc = (org.oXML.engine.RuntimeContext)rc.copy();
+    thread = new Thread(this);
+    this.instance = null;
+  }
+
+  private void init(Node instance, org.oXML.engine.RuntimeContext rc)
+    throws ObjectBoxException {
+    this.rc = (org.oXML.engine.RuntimeContext)rc.copy();
+    thread = new Thread(this);
+    run = getType().getFunction(RUN_NAME, RUN_SIG);
+    if(run == null)
+      throw new ObjectBoxException("invalid Thread type: "+getType());
+    this.instance = instance;
+  }
+-->
+
+  public void run() {
+    try{
+      if(run == null)
+        run = getType().getFunction(RUN_NAME, RUN_SIG);
+      if(run == null)
+        throw new RuntimeException("No such function: "+getType().getName()+".run()");
+      Threads.setContext((org.oXML.engine.RuntimeContext)rc.copy());
+      result = run.invoke(me, RUN_ARGS, Threads.getContext());
+    }catch(ObjectBoxException exc){
+      Log.exception(exc, "excecuting thread: "+getType().getName());
+    }
+  }
+
+  public void setPriority(int order){
+      if(order > Thread.MAX_PRIORITY)
+        order = Thread.MAX_PRIORITY;
+      if(order &lt; Thread.MIN_PRIORITY)
+        order = Thread.MIN_PRIORITY;
+      thread.setPriority(order);
+  }
+
+  public void setDaemon(boolean isDaemon){
+      thread.setDaemon(isDaemon);
+  }
+  </java:code>
+  <!--
+  <o:function name="Thread" java:throws="ObjectBoxException">
+    <o:param name="rc" java:class="org.oXML.engine.RuntimeContext"/>
+    <java:code>
+      init(this, rc);
+    </java:code>
+  </o:function> -->
+
+  <o:constructor>
+    <java:code>
+    thread = new Thread(this);
+    </java:code>
+  </o:constructor>
+
+  <o:function name="start" java:throws="ObjectBoxException">
+    <doc:p>
+      Start this <doc:type/> and execute its run() function.
+    </doc:p>
+    <java:code>
+      rc = Threads.getContext(); // will make a copy of this when starting new thread
+      thread.start();
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="sleep" java:throws="ObjectBoxException">
+    <o:param name="millis"/>
+    <doc:p>
+      Put this <doc:type/> to sleep for <doc:param/> milliseconds.
+    </doc:p>
+    <java:code>
+      try{
+        thread.sleep((int)millis.numberValue());
+      }catch(InterruptedException exc){
+	throw new ObjectBoxException(exc);
+      }
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="priority">
+    <o:param name="order"/>
+    <doc:p>
+      Decide what priority this <doc:type/> should have over others. Higher priority means precedence over other threads. Useable values are between 1 (for low priority) and 10 (for highest priority).
+    </doc:p>
+    <doc:param>The new thread priority.</doc:param>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      this.setPriority((int)order.numberValue());
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="priority">
+    <doc:p>
+      Determine what priority this <doc:type/> has over others.
+    </doc:p>
+    <java:code>
+      return new NumberNode(thread.getPriority());
+    </java:code>
+  </o:function>
+
+  <o:function name="daemon">
+    <o:param name="on"/>
+    <doc:p>
+      Set whether this is a daemon thread or not. Daemon threads are background threads, they are automatically killed when no other threads remain.
+    </doc:p>
+    <doc:param>True if this should be a daemon thread, otherwise false.</doc:param>
+    <doc:return>This <doc:type/>.</doc:return>
+    <java:code>
+      thread.setDaemon(on.booleanValue());
+      return this;
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set thread="Thread()"/>
+	<o:assert test="not($thread.daemon())"/>
+	<o:do select="$thread.daemon(true())"/>
+	<o:assert test="$thread.daemon()"/>
+	<o:do select="$thread.daemon(false())"/>
+	<o:assert test="not($thread.daemon())"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="daemon">
+    <doc:p>
+      Determine if this is a daemon (background) thread.
+    </doc:p>
+    <java:code>
+      return BooleanNode.booleanNode(thread.isDaemon());
+    </java:code>
+  </o:function>
+
+  <o:function name="yield">
+    <doc:p>
+      Allow other <doc:type/>s to execute, momentarily, ahead of this one.
+    </doc:p>
+    <java:code>
+      thread.yield();
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="wait" java:name="doWait" java:throws="ObjectBoxException">
+    <doc:p>
+      Wait for this <doc:type/> to finish executing.
+    </doc:p>
+    <java:code>
+      try{
+        thread.join();
+      }catch(InterruptedException exc){
+        throw new ObjectBoxException(exc);
+      }
+      return this;
+    </java:code>
+  </o:function>
+
+  <o:function name="run" java:name="doRun">
+    <doc:p>
+      Default implementation of run(), does nothing.
+    </doc:p>
+    <java:code>
+      return NodesetNode.EMPTY_SET;
+    </java:code>
+  </o:function>
+
+  <o:function name="return" java:name="waitAndReturn" java:throws="ObjectBoxException">
+    <doc:p>
+      Wait for this <doc:type/> to finish executing and get the result.
+    </doc:p>
+    <doc:return>The nodeset resulting from running this <doc:type/>s run() function.</doc:return>
+    <java:code>
+      try{
+        thread.join();
+      }catch(InterruptedException exc){
+        throw new ObjectBoxException(exc);
+      }
+      return result == null ? NodesetNode.EMPTY_SET : result;
+    </java:code>
+  </o:function>
+
+  <ut:test>
+    <!-- test simple actions on Threads: priority, start, sleep, wait, return -->
+    <ut:definition>
+      <o:set thread="Thread()"/>
+      <o:do select="$thread.priority(5)"/>
+      <o:assert test="$thread.priority() &lt;= 5"/>
+      <o:do select="$thread.start()"/>
+      <o:do select="$thread.sleep(20)"/>
+      <o:do select="$thread.wait()"/>
+      <o:do select="$thread.return()"/>
+    </ut:definition>
+  </ut:test>
+
+  <ut:test>
+    <ut:definition>
+      <o:type name="TestThread">
+	<o:parent name="Thread"/>
+	<o:function name="run">
+	  <o:do>success</o:do>
+	</o:function>
+      </o:type>
+      <o:set thread="TestThread()"/>
+      <o:do select="$thread.start()"/>
+      <o:return select="$thread.return()"/>
+    </ut:definition>
+    <ut:result>success</ut:result>
+  </ut:test>
+
+  <ut:test>
+    <ut:definition>
+      <o:variable name="thread">
+	<o:thread>
+	  <o:eval select="'success'"/>
+	</o:thread>
+      </o:variable>
+      <o:return select="$thread.return()"/>
+    </ut:definition>
+    <ut:result>success</ut:result>
+  </ut:test>
+
+<!--
+  <o:function name="priority" java:name="setPriority" java:class="void">
+    <o:param name="order" java:class="int"/>
+    <java:code>
+      if(order > Thread.MAX_PRIORITY)
+        order = Thread.MAX_PRIORITY;
+      if(order &lt; Thread.MIN_PRIORITY)
+        order = Thread.MIN_PRIORITY;
+      thread.setPriority(order);
+    </java:code>
+  </o:function> -->
+
+<!--
+  <o:function name="daemon" java:name="setDaemon" java:class="void">
+    <o:param name="isDaemon" java:class="boolean"/>
+    <java:code>
+      thread.setDaemon(isDaemon);
+    </java:code>
+  </o:function>
+-->
+</o:type>

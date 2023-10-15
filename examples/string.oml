@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates String functions (including regexp) -->
+<program xmlns:o="http://www.o-xml.org/lang/" >
+
+  <o:log msg="length: {'length'.length()}"/>
+
+  <o:for-each name="match" select="'8-12,15,18'.match('[1-8]')">
+    <match><o:eval select="$match"/></match>
+  </o:for-each>
+
+  <o:for-each name="match" select="'8-12,15,18'.split('[,-]')">
+    <split><o:eval select="$match"/></split>
+  </o:for-each>
+
+  <substitute><o:eval select="'Tank b123: 85  Tank b256: 32  Tank b78: 22'.substitute('b(\d+):', 'a$1-')"/></substitute>
+
+
+</program>

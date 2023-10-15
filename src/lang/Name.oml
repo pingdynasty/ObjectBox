@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<o:type name="Name" java:class="NameNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    A Name represents an XML QName, ie a local name qualified by an optional namespace URI. The string value of a Name is the namespace, if available, contained in curly braces followed by the local name, for example "{http://www.o-xml.org/lang}program".
+  </doc:p>
+
+  <o:parent name="String"/>
+
+  <o:variable name="name" java:class="Name"/>
+
+  <o:constructor>
+    <o:param name="other" type="Name"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      name = other.name;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public NameNode(Name name){
+      this();
+      this.name = name;
+    }
+
+    public Name getNodeName(){
+	return name;
+    }
+  </java:code>
+
+  <o:constructor java:throws="ObjectBoxException">
+    <o:param name="name"/>
+    <doc:p>Create a new Name from the string value of <doc:param/>, possibly prefixed by a namespace URI enclosed in curly braces.</doc:p>
+    <java:code>
+      this.name = Name.makeName(name.stringValue());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:set name="Name('{urn:foobar}test')"/>
+        <o:assert test="$name.local() = 'test'"/>
+        <o:assert test="$name.namespace() = 'urn:foobar'"/>
+      </ut:definition>
+    </ut:test>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="uri"/>
+    <o:param name="local"/>
+    <java:code>
+      this.name = new Name(uri.stringValue(), local.stringValue());
+    </java:code>
+  </o:constructor>
+
+  <ut:dataset name="nm">
+    <o:eval select="Name('urn:NoNameSpace', 'local')"/>
+  </ut:dataset>
+
+  <o:function name="local">
+    <doc:p>
+      Get the local part of this Name.
+    </doc:p>
+    <java:code>
+      return new StringNode(name.getLocalName());
+    </java:code>
+    <ut:test>
+      <ut:input ref="nm"/>
+      <ut:definition>
+        <o:return select="$input.local()"/>
+      </ut:definition>
+      <ut:result>local</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="namespace">
+    <doc:p>
+      Get the namespace URI of this Name.
+    </doc:p>
+    <java:code>
+      return new StringNode(name.getNamespaceURI());
+    </java:code>
+    <ut:test>
+      <ut:input ref="nm"/>
+      <ut:definition>
+        <o:return select="$input.namespace()"/>
+      </ut:definition>
+      <ut:result>urn:NoNameSpace</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <doc:p>Get the string value of this <doc:type/>.</doc:p>
+    <java:code>
+      return new StringNode(name.toString());
+    </java:code>
+  </o:function>
+
+  <o:function name="name">
+    <java:code>
+      return this;
+    </java:code>
+  </o:function>
+
+</o:type>
+

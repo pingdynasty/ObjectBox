@@ -1,0 +1,440 @@
+<?xml version="1.0"?>
+<o:type name="Number" java:class="NumberNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    The Number type represents a floating-point number with double precision.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="value" java:class="double"/>
+
+  <o:constructor>
+    <o:param name="other" type="Number"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      value = other.value;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public NumberNode(double value){
+        this();
+        this.value = value;
+    }
+
+    public NumberNode(Number value){
+        this(value.doubleValue());
+    }
+
+    public double getDouble(){
+        return value;
+    }
+
+    /**
+     * XPath v1.0 4.3 Boolean Functions
+     * a number is true iff it is neither positive or negative zero nor NaN.
+     */
+    public static boolean booleanValue(double value){
+        return !(Double.isNaN(value) || value == 0.0);
+    }
+
+    /**
+     * XPath v1.0 4.2 String Functions
+     * a number is converted to a string as follows
+     * - NaN is converted to the string 'NaN'
+     * - positive zero is converted to the string '0'
+     * - negative zero is converted to the string '0'
+     * - positive infinity is converted to the string 'Infinity'
+     * - negative infinity is converted to the string '-Infinity'
+     * - if the number is an integer, the number is represented in
+     *   decimal form as a Number with no decimal point and no leading
+     *   zeros, preceded by a minus sign (-) if the number is negative
+     * - otherwise, the number is represented in decimal form as a
+     *   Number including a decimal point with at least one digit 
+     *   before the decimal point and at least one digit after the 
+     *   decimal point, preceded by a minus sign (-) if the number is 
+     *   negative; there must be no leading zeros before the decimal 
+     *   point apart possibly from the one required digit immediately
+     *   before the decimal point; beyond the one required digit after
+     *   the decimal point there must be as many, but only as many, 
+     *   more digits as are needed to uniquely distinguish the number
+     *   from all other IEEE 754 numeric values.
+     */
+    public static final String stringValue(double num){
+        // originally in org.apache.xpath.objects.XNumber
+        if (Double.isNaN(num))
+            return "NaN";
+        else if (Double.isInfinite(num)){
+            if (num > 0)
+                return "Infinity";
+            else
+                return "-Infinity";
+        }
+        
+        String s = Double.toString(num);
+        int len = s.length();
+
+        if (s.charAt(len - 2) == '.' &amp;&amp; s.charAt(len - 1) == '0'){
+            s = s.substring(0, len - 2);
+            
+            if (s.equals("-0"))
+                return "0";
+            return s;
+        }
+
+        int e = s.indexOf('E');
+
+        if (e &lt; 0)
+            return s;
+
+        int exp = Integer.parseInt(s.substring(e + 1));
+        String sign;
+
+        if(s.charAt(0) == '-'){
+            sign = "-";
+            s = s.substring(1);
+            
+            --e;
+        }else
+            sign = "";
+
+        int nDigits = e - 2;
+
+        if (exp >= nDigits)
+            return sign + s.substring(0, 1) + s.substring(2, e)
+                + zeros(exp - nDigits);
+
+        if (exp > 0)
+            return sign + s.substring(0, 1) + s.substring(2, 2 + exp) + "."
+                + s.substring(2 + exp, e);
+
+        return sign + "0." + zeros(-1 - exp) + s.substring(0, 1)
+            + s.substring(2, e);
+
+//          java.text.DecimalFormat format = new java.text.DecimalFormat("0");
+//          return format.format(value);
+//          return Double.toString(value);
+    }
+
+    /**
+     * Return a string of '0' of the given length
+     * from Apache Xalan, org.apache.xpath.objects.XNumber
+     *
+     * @param n Length of the string to be returned
+     * @return a string of '0' with the given length
+     */
+    private static final String zeros(int n){
+        if (n &lt; 1)
+            return "";
+        
+        char[] buf = new char[n];
+        
+        for (int i = 0; i &lt; n; i++)
+            buf[i] = '0';
+        
+        return new String(buf);
+    }
+</java:code>
+
+  <o:constructor>
+    <o:param name="value"/>
+    <java:code>
+      this.value = value.numberValue();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="abs">
+    <doc:return>The absolute value of this Number.</doc:return>
+    <java:code>
+      return new NumberNode(Math.abs(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(-1234.5678).abs().abs()"/>
+      </ut:definition>
+      <ut:result>1234.5678</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="floor">
+    <doc:return>
+      The largest integer that is not greater than this Number.
+    </doc:return>
+    <java:code>
+      return new NumberNode(Math.floor(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).floor()"/>
+      </ut:definition>
+      <ut:result>1234</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="ceiling">
+    <doc:return>
+      The smallest integer that is not less than this Number.
+    </doc:return>
+    <java:code>
+      return new NumberNode(Math.ceil(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).ceiling()"/>
+      </ut:definition>
+      <ut:result>1235</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="round">
+    <doc:return>The integer that is closest or equal to this Number.</doc:return>
+    <java:code>
+      return new NumberNode(Math.round(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).round()"/>
+      </ut:definition>
+      <ut:result>1235</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="sin">
+    <doc:p>
+      Calculate the trigonometric sine of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.sin(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).sin()"/>
+      </ut:definition>
+      <ut:result>0.07803344920002027</ut:result>
+<!--       <ut:result>0.07803344920005399623</ut:result> -->
+    </ut:test>
+  </o:function>
+
+  <o:function name="cos">
+    <doc:p>
+      Calculate the trigonometric cosine of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.cos(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).cos()"/>
+      </ut:definition>
+      <ut:result>-0.9969507414140119</ut:result>
+<!--       <ut:result>-0.99695074141400917678</ut:result> -->
+    </ut:test>
+  </o:function>
+
+  <o:function name="tan">
+    <doc:p>
+      Calculate the trigonometric tangent of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.tan(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).tan()"/>
+      </ut:definition>
+      <ut:result>-0.07827212113744211</ut:result>
+<!--       <ut:result>-0.07827212113747615920</ut:result> -->
+    </ut:test>
+  </o:function>
+
+  <o:function name="asin">
+    <doc:p>
+      Calculate the trigonometric arc sine of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.asin(value));
+    </java:code>
+  </o:function>
+
+  <o:function name="acos">
+    <doc:p>
+      Calculate the trigonometric arc cosine of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.acos(value));
+    </java:code>
+  </o:function>
+
+  <o:function name="atan">
+    <doc:p>
+      Calculate the trigonometric arc tangent of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.atan(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).atan()"/>
+      </ut:definition>
+      <ut:result>1.56998632690562358762</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="log">
+    <doc:p>
+      Calculate the natural algorithm (base e) of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.log(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).log()"/>
+      </ut:definition>
+      <ut:result>7.11847622829778629250</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="sqrt">
+    <doc:p>
+      Calculate the square root of this Number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.sqrt(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1234.5678).sqrt()"/>
+      </ut:definition>
+      <ut:result>35.13641700572214008000</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="exp">
+    <doc:p>
+      Calculate Eulers number e raised to the power of this number.
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.exp(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1.2345678).exp()"/>
+      </ut:definition>
+      <ut:result>3.43689277460133658670</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="pow">
+    <o:param name="power"/>
+    <doc:p>
+      Calculate this Number raised to the power of "power".
+    </doc:p>
+    <java:code>
+      return new NumberNode(Math.pow(value,
+                                     power.numberValue()));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(1.2345678).pow(8)"/>
+      </ut:definition>
+      <ut:result>5.39659173718880423643</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="infinite">
+    <doc:return>Boolean true if this Number is infinite.</doc:return>
+    <java:code>
+      return BooleanNode.booleanNode(Double.isInfinite(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:assert test="Number(123456789).exp().infinite()"/>
+        <o:assert test="not(Number(1.23456789).exp().infinite())"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="NaN">
+    <doc:return>true if this number is Not a Number.</doc:return>
+    <java:code>
+      return BooleanNode.booleanNode(Double.isNaN(value));
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:assert test="Number(-1234.5678).sqrt().NaN()"/>
+        <o:assert test="not(Number(1234.5678).NaN())"/>
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <o:function name="factorial">
+    <doc:return>the factorial of this number.</doc:return>
+    <java:code>
+      int x = (int)value;
+      if(x &lt; 0)
+        return new NumberNode(0.0);
+      double result = 1.0;
+      for(; x > 1; x--)
+        result *= x;
+      return new NumberNode(result);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(9).factorial()"/>
+      </ut:definition>
+      <ut:result>362880</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="format">
+    <o:param name="pattern"/>
+    <doc:return>this <doc:type/> as a formatted <doc:type name="String"/>.</doc:return>
+    <doc:same>format-number($this, $pattern)</doc:same>
+    <java:code>
+      return CoreModule.format_number(this, pattern);
+    </java:code>
+    <ut:test>
+      <ut:definition>
+        <o:return select="Number(9).format('00.00')"/>
+      </ut:definition>
+      <ut:result>09.00</ut:result>
+    </ut:test>    
+  </o:function>
+
+  <o:function name="string">
+    <doc:see>XPath v1.0 4.2 String Functions</doc:see>
+    <doc:p>A number is converted to a string as follows:</doc:p>
+    <doc:p>* NaN is converted to the string NaN</doc:p>
+    <doc:p>* positive zero is converted to the string 0</doc:p>
+    <doc:p>* negative zero is converted to the string 0</doc:p>
+    <doc:p>* positive infinity is converted to the string Infinity</doc:p>
+    <doc:p>* negative infinity is converted to the string -Infinity</doc:p>
+    <doc:p>* if the number is an integer, the number is represented in decimal form as a Number with no decimal point and no leading zeros, preceded by a minus sign (-) if the number is negative</doc:p>
+    <doc:p>otherwise, the number is represented in decimal form as a Number including a decimal point with at least one digit before the decimal point and at least one digit after the decimal point, preceded by a minus sign (-) if the number is negative; there must be no leading zeros before the decimal point apart possibly from the one required digit immediately before the decimal point; beyond the one required digit after the decimal point there must be as many, but only as many, more digits as are needed to uniquely distinguish the number from all other IEEE 754 numeric values.</doc:p>
+    <java:code>
+      return new StringNode(stringValue(value));
+    </java:code>
+  </o:function>
+
+  <o:function name="boolean" java:name="_boolean">
+    <doc:p>Get the Boolean value of this <doc:type/>.</doc:p>
+    <doc:see>XPath v1.0 4.3 Boolean Functions</doc:see>
+    <doc:p>A number is true if and only if it is neither positive or negative zero nor NaN.</doc:p>
+    <java:code>
+      return BooleanNode.booleanNode(!(value == 0.0 || Double.isNaN(value)));
+    </java:code>
+  </o:function>
+
+  <o:function name="number">
+    <java:code>
+      return this;
+    </java:code>
+  </o:function>
+</o:type>
+

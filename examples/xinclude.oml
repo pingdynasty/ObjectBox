@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!-- test the XInclude extensions -->
+<o:program xmlns:o="http://www.o-xml.org/lang/"
+	   xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <one>
+    <xi:include href="config-file.xml#xpointer(settings/settingsfile/text())"/>
+  </one>
+  <two>
+    <xi:include href="config-file.xml#xpointer(/settings/settingsfile)"/>
+  </two>
+  <three>
+    <xi:include href="config-file.xml#xpointer(settings)"/>
+  </three>
+  <four>
+    <xi:include href="config-file.xml#xpointer(node())"/>
+  </four>
+
+  <o:variable name="var">
+    <xi:include href="config-file.xml"/>
+  </o:variable>
+
+  <file>
+    <o:eval select="$var"/>
+  </file>
+
+  <xi:include href="config-file.xml#xpointer(/)"/>
+</o:program>

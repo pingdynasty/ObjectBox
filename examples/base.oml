@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!-- from Christophe Chenon email
+     Passing parameters in a recursive procedure
+     3 October 2004 20:12:55 BST
+-->
+<o:program xmlns:o="http://www.o-xml.org/lang/" xmlns:m="http://www.o-xml.com/mine">
+  <o:param name="number" select="12938"/>
+  <o:param name="base" select="8"/>
+
+  <o:procedure name='base_p'>
+    <o:param name='number' type='Number'/>
+    <o:param name='base' type='Number' select='2'/>
+    <o:do>
+      <o:log msg="number: {$number}"/>
+      <o:choose>
+	<o:when test='$number+1>$base'>
+	  <base_p number='($number - ($number mod $base)) div $base' base='$base'/>
+	  <o:eval select='$number mod $base'/>  <!-- Here, the value of $number has changed -->
+	</o:when>
+	<o:otherwise><o:eval select='$number'/></o:otherwise>
+      </o:choose>
+    </o:do>
+  </o:procedure>
+  Result : <base_p number='$number' base='$base'/> <!-- The result is not the one expected -->
+
+  The following is basically the same procedure, where the parameter is not changed. But the result is "reversed", which is not quite satisfactory :-)
+
+  <o:procedure name='base_p2'>
+    <o:param name='number' type='Number'/>
+    <o:param name='base' type='Number' select='2'/>
+    <o:do>
+      <o:log msg="number: {$number}"/>
+      <o:choose>
+	<o:when test='$number+1>$base'>
+	  <o:eval select='$number mod $base'/> <!-- Here, the value of $number has not changed yet -->
+	  <base_p2 number='($number - ($number mod $base)) div $base' base='$base'/>
+	</o:when>
+	<o:otherwise><o:eval select='$number'/></o:otherwise>
+      </o:choose>
+    </o:do>
+  </o:procedure>
+  Result : <base_p2 number='$number' base='$base'/> <!-- Expected result, to be read from the right to the left... -->
+
+  I tried to deep-copy the parameter, to no effect : the value is changed after the recursive call, as can be expected.
+
+  My question : can I declare the parameter in such a way that its value is kept after a call to a function that will use the same parameter name, which is obviously the case of a recursive call ?
+
+  This is the same routine as a function which works as expected, the parameters being evaluated before the call to the function.
+
+  <o:function name='base_f'>
+    <o:param name='number' type='Number'/>
+    <o:param name='base' type='Number' select='2'/>
+    <o:do>
+      <o:log msg="number: {$number}"/>
+      <o:choose>
+	<o:when test='$number+1>$base'>
+	  <o:return select='concat(base_f(($number - ($number mod $base)) div $base,$base),($number mod $base).string())'/>
+	</o:when>
+	<o:otherwise><o:return select='$number.string()'/></o:otherwise>
+      </o:choose>
+    </o:do>
+  </o:function>
+  Result :<o:eval select='base_f($number, $base)'/> <!-- Expected value -->
+</o:program>

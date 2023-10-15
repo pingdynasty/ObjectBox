@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- test assertions and exceptions -->
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <o:param name="var" select="'wu-tang'"/>
+
+  <o:function name="throw">
+    <o:param name="exc"/>
+    <o:do>
+      <o:throw select="$exc"/>
+    </o:do>
+  </o:function>
+
+  <o:function name="wrap">
+    <o:param name="exc"/>
+    <o:do>
+      <o:return select="throw($exc)"/>
+    </o:do>
+  </o:function>
+
+  <o:do select="wrap($var)"/>
+
+</o:program>

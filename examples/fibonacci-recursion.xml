@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+
+  <o:function name="fib">
+    <o:param name="n"/>
+    <o:do>
+      <o:if test="$n &lt;= 1"><o:return select="1"/></o:if>
+      <o:log msg="{$n}"/>
+      <fib><o:eval select="fib($n - 1) + fib($n - 2)"/></fib>
+    </o:do>
+  </o:function>
+
+  <fibonacci>
+    <o:eval select="fib(20)"/>
+<!--     <o:for-each name="i" to="21"> -->
+<!--       <o:log msg="{$i} {fib($i)}"/> -->
+<!--       <number index="{$i}"><o:eval select="fib($i)"/></number> -->
+<!--     </o:for-each> -->
+  </fibonacci>
+    
+</o:program>

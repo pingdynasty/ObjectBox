@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<o:do xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:db="http://www.o-xml.com/db/">
+
+  <db:connection>
+    <db:url>jdbc:mysql://localhost:3306/bullet</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+    <db:username>bullet</db:username>
+    <db:password>bullet</db:password>
+  </db:connection>
+
+  <db:execute sql="select * from users">
+    [name], [realname], [email]
+  </db:execute>
+
+</o:do>

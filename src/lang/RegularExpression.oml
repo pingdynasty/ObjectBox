@@ -1,0 +1,349 @@
+<?xml version="1.0"?>
+<o:type name="RegularExpression" java:class="RegularExpressionNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    <doc:type/>
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+<!--
+  <o:variable name="pattern" java:class="org.apache.oro.text.regex.Pattern"/>
+  <o:variable name="pattern" java:class="java.util.regex.Pattern"/>
+-->
+
+  <java:code source="1.3">
+    private org.apache.oro.text.regex.Pattern pattern;
+  </java:code>
+
+  <java:code source="1.4">
+    private java.util.regex.Pattern pattern;
+  </java:code>
+
+  <o:constructor>
+    <o:param name="other" type="RegularExpression"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      pattern = other.pattern;
+    </java:code>
+  </o:constructor>
+
+  <o:constructor java:throws="ObjectBoxException">
+    <o:param name="pattern" java:class="String"/>
+    <java:code source="1.3">
+	org.apache.oro.text.regex.PatternCompiler compiler = 
+	    new org.apache.oro.text.regex.Perl5Compiler();
+	try {
+	    this.pattern = compiler.compile(pattern);
+	}catch(org.apache.oro.text.regex.MalformedPatternException exc) {
+	    throw new ObjectBoxException("invalid regexp pattern: "+pattern);
+	}
+    </java:code>
+    <java:code source="1.4">
+      this.pattern = java.util.regex.Pattern.compile(pattern);
+    </java:code>
+  </o:constructor>
+
+  <o:constructor java:throws="ObjectBoxException">
+    <o:param name="pattern"/>
+    <java:code source="1.3">
+	org.apache.oro.text.regex.PatternCompiler compiler = 
+	    new org.apache.oro.text.regex.Perl5Compiler();
+	try {
+	    this.pattern = compiler.compile(pattern.stringValue());
+	}catch(org.apache.oro.text.regex.MalformedPatternException exc) {
+	    throw new ObjectBoxException("invalid regexp pattern: "+pattern.stringValue());
+	}
+    </java:code>
+    <java:code source="1.4">
+      this.pattern = java.util.regex.Pattern.compile(pattern.stringValue());
+    </java:code>
+  </o:constructor>
+
+  <ut:dataset name="uk-postcode-pattern">
+    <o:eval select="Name('urn:NoNameSpace', 'local')"/>
+  </ut:dataset>
+
+  <o:function name="matches">
+    <o:param name="text"/>
+    <doc:p>
+    </doc:p>
+    <java:code source="1.3">
+	org.apache.oro.text.regex.PatternMatcher matcher = 
+	    new org.apache.oro.text.regex.Perl5Matcher();
+	org.apache.oro.text.regex.PatternMatcherInput input = 
+	    new org.apache.oro.text.regex.PatternMatcherInput(text.stringValue());
+	boolean result = matcher.contains(input, pattern);
+	return result ? BooleanNode.TRUE : BooleanNode.FALSE;
+    </java:code>
+    <java:code source="1.4">
+      String string1 = text.stringValue();
+      java.util.regex.Matcher matcher = pattern.matcher(string1);
+      return BooleanNode.booleanNode(matcher.matches());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:variable name="pattern">^([a-zA-Z0-9_\-])([a-zA-Z0-9_\-\.]*)@(\[((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}|((([a-zA-Z0-9\-]+)\.)+))([a-zA-Z]{2,}|(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\])$</o:variable>
+	<!-- the pattern matches email addresses -->
+	<o:set pattern="RegularExpression($pattern)"/>
+	<o:assert test="$pattern.matches('mars@pingdynasty.com')"/>
+	<o:assert test="$pattern.matches('martin@hack.org')"/>
+	<o:assert test="$pattern.matches('martin.klang@ri3k.com')"/>
+	<o:assert test="not($pattern.matches('.klang@ri3k.com'))"/>
+      </ut:definition>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+	<o:variable name="pattern">^(([A-Z]{1,2}\d{1,2})|([A-Z]{1,2}\d[A-Z]))\s?\d[ABDEFGHJLNPQRSTUWXYZ]{2}$</o:variable>
+	<!-- the pattern matches UK Postcodes addresses -->
+	<o:set pattern="RegularExpression($pattern)"/>
+	<o:assert test="$pattern.matches('NW5 2XD')"/>
+	<o:assert test="$pattern.matches('E1 7QX')"/>
+	<o:assert test="not($pattern.matches('NW29 40XX'))"/>
+      </ut:definition>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+	<o:variable name="pattern">^[A-Za-z]{1,2}[\d]{1,2}([A-Za-z])?\s?[\d][A-Za-z]{2}$</o:variable>
+	<o:set pattern="RegularExpression($pattern)"/>
+	<o:assert test="$pattern.matches('CF1 2AA')"/>
+	<o:assert test="$pattern.matches('cf564fg')"/>
+	<o:assert test="not($pattern.matches('a1234d'))"/>
+	<o:assert test="not($pattern.matches('A12 77Y'))"/>
+	<!-- UK Postcode: matches CF1 2AA and cf564fg (= CF56 4FG) but not a1234d or A12 77Y. -->
+      </ut:definition>
+    </ut:test>
+  </o:function>
+
+  <ut:definition name="wordcount">
+    <o:set regex="RegularExpression('\w+')"/>
+    <o:return select="count($regex.match($input))"/>
+  </ut:definition>
+
+  <o:function name="match">
+    <o:param name="text"/>
+    <doc:p>
+    </doc:p>
+    <java:code source="1.3">
+        Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+	org.apache.oro.text.regex.PatternMatcher matcher = 
+	    new org.apache.oro.text.regex.Perl5Matcher();
+	org.apache.oro.text.regex.PatternMatcherInput input = 
+	    new org.apache.oro.text.regex.PatternMatcherInput(text.stringValue());
+	while(matcher.contains(input, pattern)){
+	    org.apache.oro.text.regex.MatchResult match = matcher.getMatch();
+	    int groups = match.groups();
+	    if(groups == 1){
+		result.addNode(new StringNode(match.group(0)));
+	    }else{
+		for(int i=1; i &lt; groups; ++i){
+		    result.addNode(new StringNode(match.group(i)));
+		}
+	    }
+	}
+	return new NodesetNode(result);
+    </java:code>
+    <java:code source="1.4">
+      java.util.regex.Matcher matcher = pattern.matcher(text.stringValue());
+      Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+      while(matcher.find())
+        result.addNode(new StringNode(matcher.group()));
+      return new NodesetNode(result);
+    </java:code>
+    <ut:test>
+      <ut:definition ref="wordcount"/>
+      <ut:input>how long is a piece of string?</ut:input>
+      <ut:result>7</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition ref="wordcount"/>
+      <ut:input>how long... is a-piece-of-string?</ut:input>
+      <ut:result>7</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="match">
+    <o:param name="text"/>
+    <o:param name="limit"/>
+    <doc:p>
+    </doc:p>
+    <java:code source="1.3">
+        int number = (int)limit.numberValue();
+        Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+	org.apache.oro.text.regex.PatternMatcher matcher = 
+	    new org.apache.oro.text.regex.Perl5Matcher();
+	org.apache.oro.text.regex.PatternMatcherInput input = 
+	    new org.apache.oro.text.regex.PatternMatcherInput(text.stringValue());
+	while(number-- > 0 &amp;&amp; matcher.contains(input, pattern)){
+	    org.apache.oro.text.regex.MatchResult match = matcher.getMatch();
+	    int groups = match.groups();
+	    if(groups == 1){
+		result.addNode(new StringNode(match.group(0)));
+	    }else{
+		for(int i=1; i &lt; groups; ++i){
+		    result.addNode(new StringNode(match.group(i)));
+		}
+	    }
+	}
+	return new NodesetNode(result);
+    </java:code>
+    <java:code source="1.4">
+      java.util.regex.Matcher matcher = pattern.matcher(text.stringValue());
+      Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+      int max = (int)limit.numberValue();
+      while(matcher.find() &amp;&amp; max-- &gt; 0)
+        result.addNode(new StringNode(matcher.group()));
+      return new NodesetNode(result);
+    </java:code>
+  </o:function>
+
+  <o:function name="split">
+    <o:param name="text"/>
+    <doc:p>Performs a regular expression split on the string value of <doc:param/>.</doc:p>
+    <doc:return>A nodeset containing the substring before and after each match in this String of the regular expression <doc:param name="pattern"/>.</doc:return>
+    <java:code source="1.3">
+	Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+	org.apache.oro.text.regex.PatternMatcher matcher = 
+	    new org.apache.oro.text.regex.Perl5Matcher();
+	java.util.List results = new java.util.ArrayList();
+	org.apache.oro.text.regex.Util.split
+	    (results, matcher, pattern, text.stringValue()); // Integer.MAX_VALUE
+	for(int i=0; i &lt; results.size(); ++i)
+	    result.addNode(new StringNode(results.get(i).toString()));
+	return new NodesetNode(result);
+    </java:code>
+    <java:code source="1.4">
+      String string = text.stringValue();
+      String[] matches = pattern.split(string);
+      Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+      for(int i=0; i &lt; matches.length; ++i)
+        result.addNode(new StringNode(matches[i]));
+      return new NodesetNode(result);
+    </java:code>
+  </o:function>
+
+  <o:function name="split">
+    <o:param name="text"/>
+    <o:param name="limit"/>
+    <doc:p>
+    </doc:p>
+    <java:code source="1.3">
+        int number = (int)limit.numberValue();
+	if(number &lt; 0)
+	    number = Integer.MAX_VALUE;
+	Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+	org.apache.oro.text.regex.PatternMatcher matcher = 
+	    new org.apache.oro.text.regex.Perl5Matcher();
+	java.util.List results = new java.util.ArrayList();
+	org.apache.oro.text.regex.Util.split
+	    (results, matcher, pattern, text.stringValue(), number);
+	for(int i=0; i &lt; results.size(); ++i)
+	    result.addNode(new StringNode(results.get(i).toString()));
+	return new NodesetNode(result);
+    </java:code>
+    <java:code source="1.4">
+      String string = text.stringValue();
+      int max = (int)limit.numberValue();
+      String[] matches = pattern.split(string, max);
+      Nodeset result = new org.oXML.xpath.iterator.DynamicNodeset();
+      for(int i=0; i &lt; matches.length; ++i)
+        result.addNode(new StringNode(matches[i]));
+      return new NodesetNode(result);
+    </java:code>
+  </o:function>
+
+  <o:function name="substitute">
+    <o:param name="text"/>
+    <o:param name="substitution"/>
+    <doc:p>
+    </doc:p>
+    <java:code source="1.3">
+	org.apache.oro.text.regex.PatternMatcher matcher = 
+	    new org.apache.oro.text.regex.Perl5Matcher();
+	org.apache.oro.text.regex.Substitution sub = 
+	    new org.apache.oro.text.regex.Perl5Substitution(substitution.stringValue());
+	String result = org.apache.oro.text.regex.Util.substitute
+	    (matcher, pattern, sub, text.stringValue(), Integer.MAX_VALUE);
+	return new StringNode(result);
+    </java:code>
+    <java:code source="1.4">
+      String string1 = text.stringValue();
+      String string2 = substitution.stringValue();
+      java.util.regex.Matcher matcher = pattern.matcher(string1);
+      return new StringNode(matcher.replaceAll(string2));
+//      StringBuffer result = new StringBuffer();
+//      while(matcher.find())
+//        matcher.appendReplacement(result, string2);
+//      matcher.appendTail(result);
+//      return new StringNode(result.toString());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set pattern="RegularExpression('b(\d+):')"/>
+	<o:return select="$pattern.substitute($input, 'a$1-')"/>
+      </ut:definition>
+      <ut:input>Tuck b123: 85  Tuck b256: 32  Tuck b78: 22</ut:input>
+      <ut:result>Tuck a123- 85  Tuck a256- 32  Tuck a78- 22</ut:result>
+    </ut:test>
+    <ut:test>
+      <ut:definition>
+	<o:set pattern="RegularExpression('a*b')"/>
+	<o:return select="$pattern.substitute($input, '-')"/>
+      </ut:definition>
+      <ut:input>aabfooaabfooabfoob</ut:input>
+      <ut:result>-foo-foo-foo-</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="substitute">
+    <o:param name="text"/>
+    <o:param name="substitution"/>
+    <o:param name="limit"/>
+    <doc:p>
+    </doc:p>
+    <java:code source="1.3">
+        int max = (int)limit.numberValue();
+	org.apache.oro.text.regex.PatternMatcher matcher = 
+	    new org.apache.oro.text.regex.Perl5Matcher();
+	org.apache.oro.text.regex.Substitution sub = 
+	    new org.apache.oro.text.regex.Perl5Substitution(substitution.stringValue());
+	String result = org.apache.oro.text.regex.Util.substitute
+	    (matcher, pattern, sub, text.stringValue(), max);
+	return new StringNode(result);
+    </java:code>
+    <java:code source="1.4">
+      String string1 = text.stringValue();
+      String string2 = substitution.stringValue();
+      int max = (int)limit.numberValue();
+      java.util.regex.Matcher matcher = pattern.matcher(string1);
+      StringBuffer result = new StringBuffer();
+      while(matcher.find() &amp;&amp; max-- &gt; 0)
+        matcher.appendReplacement(result, string2);
+      matcher.appendTail(result);
+      return new StringNode(result.toString());
+    </java:code>
+    <ut:test>
+      <ut:definition>
+	<o:set pattern="RegularExpression('b(\d+):')"/>
+	<o:return select="$pattern.substitute($input, 'a$1-', 2)"/>
+      </ut:definition>
+      <ut:input>Tuck b123: 85  Tuck b256: 32  Tuck b78: 22</ut:input>
+      <ut:result>Tuck a123- 85  Tuck a256- 32  Tuck b78: 22</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <java:code source="1.3">
+      return new StringNode(pattern.toString());
+    </java:code>
+    <java:code source="1.4">
+      return new StringNode(pattern.pattern());
+    </java:code>
+  </o:function>
+
+</o:type>
+

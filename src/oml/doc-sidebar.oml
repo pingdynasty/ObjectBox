@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/"
+           xmlns:doc="http://www.o-xml.org/namespace/document/"
+	   xmlns:io="http://www.o-xml.org/lib/io/">
+  <o:param name="dir"/>
+
+  <o:meta><doc:purpose>
+    Program that generates a documentation index page 
+    plus sidebars with indexes for the directories it scans.
+    Expects to find the source oml files and their DocBook xml files, based on import statements.
+  </doc:purpose></o:meta>
+
+  <o:import href="lib/io/File.oml"/>
+
+  <o:function name="sidebar">
+    <o:param name="dir" type="io:File"/>
+    <o:do>
+      <sidebar>
+        <o:set path="substitute($dir.path(), '.*/docs/(.*)', '/docs/$1')"/>
+	<title><ulink url="{$path}/index.html">Package</ulink></title>
+	<variablelist>
+	  <o:for-each name="file" select="$dir.list('*.xml')">
+	    <o:log msg="sidebar file: {$file.name()}"/>
+	    <o:set art="$file.parse()/article/*"/>
+	    <varlistentry>
+	      <term>
+		<ulink url="{$path}/{substring-before($file.name(), '.xml')}.html">
+		  <o:eval select="$art/title/text()"/>
+		</ulink>
+	      </term>
+	      <listitem>
+		<o:eval select="$art/para[not(command) and not(starts-with(., 'extends'))]"/><!-- first level paras only -->
+	      </listitem>
+	    </varlistentry>
+	  </o:for-each>
+	</variablelist>
+	<para><ulink url="/docs/lib/index.html">Library Overview</ulink></para>
+      </sidebar>
+    </o:do>
+  </o:function>
+
+  <o:set dir="io:File($dir)"/>
+
+  <article>
+    <title>Library Modules</title>
+    <o:for-each name="file" select="$dir.list('*.oml')">
+      <!-- iterate over all module files -->
+      <o:set module="$file.parse()"/>
+      <o:set name="substring-before($file.name(), '.oml')"/>
+      <o:set subdir="io:File($dir, $name)"/>
+      <!-- create and write sidebar.xml -->
+      <o:set sidebar="io:File($subdir, 'sidebar.xml')"/>
+      <o:do select="$sidebar.write(sidebar($subdir))"/>
+      <!-- create the module information -->
+      <o:variable name="content">
+	<title>
+	  <ulink url="/docs/lib/{$name}/index.html">
+	    <o:eval select="$name"/>
+	  </ulink>
+	</title>
+	<para>Namespace: <o:eval select="$module/o:module/@namespace.string()"/></para>
+	<segmentedlist>
+	  <segtitle>Type</segtitle>
+	  <segtitle>Location</segtitle>
+	  <segtitle>Description</segtitle>
+	  <o:for-each name="import" select="$module/o:module/o:import">
+	    <o:set ref="substitute($import/@href, '\.oml', '.xml')"/>
+	    <o:set doc="io:File($dir.parent(), $ref)"/>
+	    <o:set type="$doc.parse()/article/*"/>
+	    <o:log msg="href: {$import/@href} type: {$type/title} file: {$doc.name()}"/>
+	    <seglistitem>
+	      <seg>
+		<ulink url="/docs/{substitute($ref, '\.xml', '.html')}">
+		  <o:eval select="$type/title/text()"/>
+		</ulink>
+	      </seg>
+	      <seg><o:eval select="$import/@href.string()"/></seg>
+	      <seg><o:eval select="$type/para"/></seg>
+	    </seglistitem>
+	  </o:for-each>
+	</segmentedlist>
+      </o:variable>
+      <!-- write it as a section in the top-level index -->
+      <section>
+	<o:eval select="$content"/>
+      </section>
+      <!-- write it as index.xml -->
+      <o:variable name="content">
+	<article>
+	  <sidebar>
+	    <para><ulink url="/docs/lib/index.html">Library Overview</ulink></para>
+	  </sidebar>
+	  <o:eval select="$content"/>
+	</article>
+      </o:variable>
+      <o:do select="io:File($subdir, 'index.xml').write($content)"/>
+    </o:for-each>
+  </article>
+
+</o:program>

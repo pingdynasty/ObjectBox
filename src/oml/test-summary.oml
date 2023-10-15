@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/"
+	   xmlns:io="http://www.o-xml.org/lib/io/">
+  <o:param name="dir" select="'.'"/>
+
+  <o:import href="lib/time.oml"/>
+  <o:import href="lib/io/File.oml"/>
+
+  <o:set dir="io:File($dir)"/>
+  <o:set now="time:Date()" xmlns:time="http://www.o-xml.org/lib/time/"/>
+
+  <o:function name="summarise">
+    <o:param name="dir" type="io:File"/>
+    <o:do>
+      <o:for-each name="file" select="$dir.list()">
+	<o:choose>
+	  <o:when test="$file.directory()">
+	    <o:eval select="summarise($file)"/>
+	  </o:when>
+	  <o:when test="$file.name().endsWith('.xml')">
+	    <o:log msg="file: {$file.path()}."/>
+	    <o:eval select="$file.parse()/report/testrun/test"/>
+	  </o:when>
+	</o:choose>
+      </o:for-each>
+    </o:do>
+  </o:function>
+
+  <report>
+    <testrun>
+      <date><o:eval select="$now.format('dd MMM yyyy HH:mm:ss')"/></date>
+      <o:eval select="summarise($dir)"/>
+    </testrun>
+  </report>
+</o:program>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/">
+  <o:param name="xsl" select="false()"/>
+  <o:if test="$xsl">
+    <?xml-stylesheet href="style.xsl" type="text/xsl"?>
+  </o:if>
+  <page>
+    <title>test page</title>
+  </page>
+</o:program>

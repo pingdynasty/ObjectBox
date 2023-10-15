@@ -1,0 +1,205 @@
+Apr 24 2007 - Performance and reliability improvements in Nodeset handling
+Apr 24 2007 - Updated Node.number() to use the string value of the node (bug #47)
+----- Release 1.1.7
+Mar 11 2007 - added support for Spring schema-based configuration
+----- Release 1.1.6
+Feb 21 2007 - changed db:result parameters to use SQL type mappings
+Feb 08 2007 - added Spring 2.0 scripting support
+Feb 05 2007 - added functionality to provide alternative SQL commands for different SQL dialects
+Jan 24 2007 - updated o:Path parser to accept div/mod/and/or as XML names
+Jul 07 2006 - added List.addAll(Nodeset) and List(Nodeset)
+Jun 27 2006 - updated o:for-each to maintain the context position during iteration
+Jun 10 2006 - added generated nodes() function for Element subtypes
+Jun 10 2006 - updated Ant task to process SML files when sml=true
+Jun 10 2006 - updated Ant task to load default extensions unless defaultExtensions=false
+Jun 10 2006 - updated Ant task with processing mode: run, test or compile
+Jun 10 2006 - updated command line tool to process SML unit tests
+Jun 08 2006 - changed Java extensions so that Node is a subtype of Object
+May 28 2006 - updated to use the SML DocumentBuilder and o:XML macros
+May 28 2006 - added -xml command line option
+May 21 2006 - resolved problem with faulty instantiation of parent types by copy constructors
+May 18 2006 - fixed bug in XPath attribute iterator when iterating over Element subtypes
+May 11 2006 - updated static db:function to honour the input parameter type
+----- Release 1.1.5
+Apr 25 2006 - added -sml command line option
+Apr 24 2006 - added -compile command line option
+Apr 21 2006 - added -xmldocs and -htmldocs command line options
+Apr 20 2006 - fixed a bug to prevent whitespace suppression in o:text evaluation
+Apr 04 2006 - added concat(Nodeset) : String
+Apr 04 2006 - fixed db:quote() escaped characters (bug #44)
+Mar 26 2006 - added Stack type
+Mar 26 2006 - added List.add(pos, obj)
+Mar 24 2006 - added function narrow(Node typename, Node object)
+Mar 24 2006 - added function Node.super(Name typename)
+Mar 21 2006 - added o:constructor mapping as synonym for o:function constructor
+Mar 21 2006 - added db:function mapping for definition of database functions
+Mar 21 2006 - added -test command line option for integrated unit testing
+Mar 04 2006 - updated o:for-each to fix problem with iteration over single nodes (bug #43)
+Mar 02 2006 - added Servlet URL parameters, and configurable parameter settings
+Mar 02 2006 - changed Servlet parameter names: upload-directory, loglevel
+Feb 28 2006 - updated namespace declaration output handling (bug #42)
+Feb 02 2006 - added function unique(Nodeset) : Nodeset
+----- Release 1.1.4
+Jan 31 2006 - added compilation check for duplicate type declarations
+Jan 30 2006 - added function ends-with(String, String) : Boolean
+Jan 30 2006 - added function String.charCodeAt(Number) : Number
+Jan 30 2006 - fixed output of default namespace declarations (bug #42)
+Sep 26 2005 - fixed Program type parameter scoping (bug #38)
+Sep 26 2005 - changed generated functions to be static
+Sep 15 2005 - added (output) encoding attribute to ObjectBox Ant task
+Sep 13 2005 - added function format-number(num, pattern)
+Sep 13 2005 - added function Number.format(pattern)
+Sep 13 2005 - added function List.clear()
+----- Release 1.1.3
+Sep 01 2005 - fixed user-defined function memory leak (bug #37)
+----- Release 1.1.2
+Apr 30 2005 - fixed threadsafety problem by removing program parameter values from InterpretedProgram
+Mar 31 2005 - fixed bug in ObjectBoxService where uploadDirectory is not set
+----- Release 1.1.1
+Feb 04 2005 - ObjectBoxServlet catches FileNotFoundException and sends 404 - Not Found
+Feb 04 2005 - org.oXML.extras.http.ObjectBoxServlet replaces org.oXML.extras.http.ObjectBox
+Feb 04 2005 - updated ObjectBoxTask (Ant task) to produce no output when content-type=none, and when 'in' is specified without 'out'
+Feb 03 2005 - added content-type="none" as possible o:program attribute
+Feb 03 2005 - added Servlet Filter class: org.oXML.extras.http.ObjectBoxFilter
+Feb 02 2005 - fixed bug in XPath predicate expression evaluation
+Feb 01 2005 - added Servlet 'logLevel' init-param
+Feb 01 2005 - updated ObjectBox Servlet to catch program return values: servlet:Redirect, servlet:Forward, servlet:Error, net:Message
+Feb 01 2005 - updated ObjectBox CLI to catch and output program return values
+----- Release 1.1.0
+Nov 30 2004 - attribute valute expression parser updated to allow nested, doubled curly braces and quoted expressions
+Nov 18 2004 - StreamResultHandler outputs XML declaration only if content-type is text/xml
+Nov 18 2004 - merge result text nodes, as in XSLT
+Nov 16 2004 - added CLI -noext and default loading of extensions
+Nov 16 2004 - added @value to o:processing-instruction
+Nov 16 2004 - added @value to o:attribute
+Nov 16 2004 - servlet honours output content-type
+Nov 16 2004 - added @content-type to o:program
+Nov 15 2004 - added Program type
+Nov 14 2004 - added o:meta mapping
+Nov 06 2004 - added o:module mapping
+Oct 30 2004 - fixed descendant:: and descendant-or-self:: bugs
+Oct 24 2004 - added RegularExpression type
+Oct 24 2004 - refactored functions to template o:XML constructs
+----- Release 1.1.0rc1
+Oct 12 2004 - fixed XInclude bug that didn't import XPointer results properly (bug #14)
+Oct 10 2004 - supply source file location in exception messages
+Oct 09 2004 - refactored db extensions to use full expressions and templates
+Oct 06 2004 - updated name and namespace handling to preserve prefixes
+Oct 02 2004 - implemented o:session input variable for command-line and servlet environments
+Sep 28 2004 - Nodeset refactored to not expose any public type functions
+Sep 27 2004 - implemented exceptions with stack traces over o:XML function calls
+Sep 25 2004 - refactored core type code templates
+Aug 10 2004 - added Array type for multi-dimensional arrays
+Aug 10 2004 - updated o:Path expression parser to enable it to produce MLML output
+----- Release 1.0.2
+Jul 21 2004 - including o:Lib 1.0.0 in the executable jar
+Jul 21 2004 - fixed problems with undeclared attribute prefixes and DOM output namespace handling
+Jul 20 2004 - added attribute value substitution
+Jul 20 2004 - changed default whitespace/comments handling to always ignore when inside mapped elements, preserve when inside literal elements
+Jul 20 2004 - fixed XPath bug where preceding:: and following:: axis only include siblings (bug #9)
+----- Release 1.0.1
+Jul 01 2004 - added SystemError.stacktrace() function
+Jun 25 2004 - added <o:document> mapping
+Jun 16 2004 - added <o:sort> mapping, similar to sort in XSLT
+Jun 07 2004 - fixed XPath bug where descendant-or-self:: axis includes sibling descendants (bug #5)
+----- Release 1.0.0
+Apr 19 2004 - added <o:thread priority="Number" daemon="Boolean"> attributes
+Apr 19 2004 - added Thread daemon status
+Apr 14 2004 - added <o:thread> construct
+Apr 14 2004 - changed <o:for-each to="x"> to default start at 0 instead of 1, to ensure 'x' iterations
+----- Release 1.0.0rc1
+Mar 10 2003 - added Bytes to java extentions - seamless conversion to Byte[] and byte[]. Also included char[] to String conversions.
+Mar 10 2003 - relative import hrefs of imported files made relative to the imported file itself, as opposed to the top-level (importing) program
+Mar 10 2003 - prevent cyclic imports
+Mar 09 2003 - added Thread type
+Mar 05 2003 - refactored constructor calls and initialisation
+Dec 20 2003 - prevent array exception in String.substring()
+Dec 20 2003 - catch exception from Saxons getAssociatedStylesheet
+Dec  4 2003 - added String.lastIndexOf(), String.substringBeforeLast(), String.substringAfterLast()
+Dec  3 2003 - added Ant task options 'in' and 'out'
+Nov 30 2003 - added Java extension function java:array() that creates Java arrays
+Nov 27 2003 - factored out XInclude functionality to be handled by a new language extension
+Nov 27 2003 - added collection type Table and binary container type Bytes
+Nov 11 2003 - improved error reporting for imported files
+----- Release 0.9.7
+Sep 30 2003 - added commandline option to set the output character encoding
+Sep 28 2003 - changed the default to preserve space and comments (in the absence of a program element)
+Sep 12 2003 - added Ant task settings: loglevel, classpath, extension
+Sep 12 2003 - added o:program attributes: space="preserve|ignore" and comments="preserve|ignore"
+Sep 12 2003 - DocumentNode may have parent, eg contained in Nodeset
+Sep 12 2003 - Document (type) output handling
+Sep  7 2003 - CLI and Name constructor handles namespace-prefixed parameter names, eg '{ns}name'
+Sep  4 2003 - introduced o:program mapping and disallowed undeclared parameters
+Sep  1 2003 - Import can load files from system classpath
+Aug 28 2003 - Servlet able to load files from WAR (thanks to Ken McCloskey)
+Jul 27 2003 - added reflection extensions
+Jul 24 2003 - integrated regressor testing with type interface code
+Jul 24 2003 - Name derives from String
+Jul 22 2003 - fixed bad group bug in match() function
+Jul 22 2003 - new regexp functions: matches(Node, Node) and String.matches(Node)
+----- Release 0.9.6
+Jul 16 2003 - updated the stream result handler to escape &, < and > chars
+Jul 16 2003 - changed db:connection to accept mixed expressions for url etc
+Jul 14 2003 - changed to use internal Log utility
+Jul 14 2003 - added String.upper() and String.lower()
+Jul 10 2003 - added o:Path regexp functions: match(), split(), substitute()
+Jul  9 2003 - added optional level attribute to o:log mapping
+Jul  8 2003 - refactored exceptions throughout whole project
+Jul  8 2003 - refactored TagAction classes into Template
+Jul  7 2003 - changed o:for-each mapping to set context node if @name is not present
+Jul  7 2003 - added current() function
+Jul  7 2003 - fixed XPath bug with descendant and descendant-or-self axis
+Jul  6 2003 - Created missing mappings: o:comment, o:text and o:processing-instruction
+Jul  6 2003 - Node generating mappings eg o:element, o:attribute uses Mixed Expressions (attribute value templates)
+Jul  4 2003 - new native type interfaces generated from oml files in src/lang
+May 13 2003 - for-each name resolution and namespace prefix bugfixed
+May 13 2003 - dynamic nodes (user-defined types) copy ctor bug fix
+May 13 2003 - ObjectBox uses org.tagbox.util.http.MultipartRequest for multipart form data
+May 12 2003 - added ExceptionHandler, Exception, SystemError and AssertionError
+May 12 2003 - added assert mapping
+May 12 2003 - prefix resolution bug fixed - if/while/choose
+May 11 2003 - added catch and throw mappings
+----- Release 0.9.5
+Apr 30 2003 - changed Java package names
+Apr 30 2003 - changed licence to GPL
+Apr 27 2003 - fixed o:Path engine predicate bug
+Apr 26 2003 - improved servlet error logging
+Apr 25 2003 - fixed o:Path function call name resolution bug
+Apr  5 2003 - added java:serialize()
+Apr  5 2003 - added servlet:servlet()
+Apr  5 2003 - added import mapping
+Apr  4 2003 - java:resolve use Class.getMethods() instead of getDeclaredMethods()
+----- Release 0.9.4
+Mar 18 2003 - changed db:execute query to db:call
+Mar 15 2003 - made standalone xsl processing optional
+Mar 15 2003 - moved standalone ObjectBox to com.oxml.engine.ObjectBox
+Mar 14 2003 - new 'set' variable mapping
+Mar 14 2003 - new Node.remove() function
+Mar 14 2003 - new Node.append(Node) function
+Mar 14 2003 - NodesetNode only adopts child node if no other parent set
+Mar 14 2003 - support for Node.string() / Node.number() / Node.boolean()
+Mar 14 2003 - new Node.replace(Node) function
+Mar 12 2003 - ignore DocType in program file instead of issueing warning
+Mar 11 2003 - added Java Extensions 'write' mapping
+Mar 11 2003 - StreamResultHandler sets namespace prefixes as required
+Feb 26 2003 - servlet sets parameters as variables
+Feb 26 2003 - XInclude integrated into commandline ObjectBox
+Feb 25 2003 - db module: query, connection, execute
+Feb 24 2003 - commandline ObjectBox takes language extension parameter (-e extensionclass)
+Feb 24 2003 - generic interface for language extensions
+Dec 31 2002 - fixed xpath attribute nametest bug
+Dec 30 2002 - added 'parse(String)' Java Extension Function
+Dec 30 2002 - fixed bug preventing multiple evals of the same node in function/procedure calls
+Nov 27 2002 - added 'in' / 'delim' iteration to for-each
+----- Release 0.9.3
+Nov 26 2002 - added 'from' / 'to' / 'step' iteration to for-each
+Nov 26 2002 - new ObjectBox Ant-task that works with filesets to generate XML from o:XML programs
+Nov 26 2002 - made StreamResultHandler aware of explicit namespace prefixes
+Nov 26 2002 - added explicit attribute action and mapping
+Nov 20 2002 - functionality to process programs for XInclude directives before compilation
+Nov 20 2002 - namespace prefix resolution from current position in program document instead of output document
+Nov 20 2002 - added Java Extension functions 'toNative(org.w3c.dom.Node): Node' and 'toDOM(Node): org.w3c.DocumentFragment'
+Nov 19 2002 - added Java Extension function 'toList(java.lang.Object[]): java.util.List'
+Nov 19 2002 - new dynamic element action and mapping
+Nov 19 2002 - fixed bug in DOM output of elements with null namespace
+Nov 18 2002 - added 'set' mapping to VariableAction

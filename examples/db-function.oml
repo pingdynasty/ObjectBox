@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:ex="http://www.o-xml.org/examples/"
+	   xmlns:db="http://www.o-xml.com/db/">
+
+  <db:connection log="true">
+    <db:url>jdbc:mysql://localhost:3306/bullet</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+    <db:username>bullet</db:username>
+    <db:password>bullet</db:password>
+    <db:pool minFree="0" maxFree="2"/>
+    <db:transaction retry="0"/>
+  </db:connection>
+
+  <!-- todo: stack traces for db:function errors!! -->
+
+  <!-- simple 'static' functions -->
+  <db:function name="PostingsPerUser">
+    <db:param name="userId" type="Number"/>
+    <db:sql>select id, subject from posting where owner = {$userId}</db:sql>
+    <db:result>
+      <posting postingId="{$id}">
+	<subject>{$subject}</subject>
+      </posting>
+    </db:result>
+  </db:function>
+
+  <db:function name="UserName">
+    <db:param name="userId" type="Number"/>
+    <db:sql>select name from users where id = {$userId}</db:sql>
+    <db:result>{$name}</db:result>
+  </db:function>
+
+  <db:function name="CountNamesakes">
+    <db:param name="Name" type="String"/>
+    <db:sql>select count(id) as count from users where name = {$Name}</db:sql>
+    <db:result>{$count}</db:result>
+  </db:function>
+
+  <o:for-each name="id" in="1 2 3 4">
+    <o:log msg="user {$id} postings {count(PostingsPerUser(number($id))/posting)} namesakes {CountNamesakes(string(UserName(number($id))))}."/>
+  </o:for-each>
+
+  <!-- type function -->
+  <o:type name="User">
+    <o:variable name="userId"/>
+    <o:variable name="Name" type="String"/>
+
+    <o:function name="User">
+      <o:param name="userId"/>
+      <o:do>
+        <o:eval select="$this.Load()"/>
+        <o:set Name="$this/user/text()"/>
+      </o:do>
+    </o:function>
+
+    <db:function name="Load">
+      <db:sql>select name from users where id={$userId}</db:sql>
+      <db:result>
+        <user>{$name}</user>
+      </db:result>
+    </db:function>
+
+    <o:function name="GetId">
+      <o:do>
+        <o:return select="$userId"/>
+      </o:do>
+    </o:function>
+
+    <o:function name="GetName">
+      <o:do>
+        <o:return select="$Name"/>
+      </o:do>
+    </o:function>
+
+    <db:function name="CountNamesakes">
+      <db:sql>select count(id) as count from posting where name = {$Name}</db:sql>
+      <db:result>{$count}</db:result>
+    </db:function>
+
+    <db:function name="CountPostings">
+      <db:sql>select count(id) as count from posting where owner = {$userId}</db:sql>
+      <db:result>{$count}</db:result>
+    </db:function>
+
+  </o:type>
+
+  <o:for-each in="1 2 3 4">
+    <o:set user="User(.)"/>
+    <o:log msg="user {$user.GetName()}({$user.GetId()}) postings {$user.CountPostings()} namesakes {$user.CountNamesakes()}."/>
+    <o:eval select="$user"/>
+  </o:for-each>
+
+</o:program>

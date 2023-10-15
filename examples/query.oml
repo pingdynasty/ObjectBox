@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<program xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:ex="http://www.o-xml.org/examples/"
+  xmlns:java="http://www.o-xml.com/java/"
+  xmlns:db="http://www.o-xml.com/db/">
+
+  <db:query name="ex:fofo" connection="ex:con">
+    <db:param name="user" type="String"/>
+    <db:sql>select name, realname, email from users where name=[user]</db:sql>
+    <db:result>
+      <user username="[name]">
+        <name>[realname]</name>
+        <email>[email]</email>
+      </user>
+    </db:result>
+  </db:query>
+
+  <db:connection name="ex:con">
+    <db:url>jdbc:mysql://localhost:3306/bullet</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+    <db:username>bullet</db:username>
+    <db:password>bullet</db:password>
+    <db:pool minFree="0" maxFree="2"/>
+    <db:transaction retry="3"/>
+  </db:connection>
+
+  <db:execute query="ex:fofo" user="'mars'"/>
+
+  <db:query name="rooms" connection="ex:con">
+    <db:param name="ownerID"/>
+    <db:sql>select * from room where owner = [ownerID]</db:sql>
+    <db:result>
+      <room roomID="[id]">
+        <name>[name]</name>
+        <description>[description]</description>
+      </room>
+    </db:result>
+  </db:query>
+
+  <db:query name="user" connection="ex:con">
+    <db:param name="name" type="String"/>
+    <db:sql>select id, name, realname, email from users where name=[name]</db:sql>
+    <db:result>
+      <user username="[name]">
+        <name>[realname]</name>
+        <email>[email]</email>
+        <rooms>
+          <db:execute query="rooms" ownerID="[id]"/>
+        </rooms>
+      </user>
+    </db:result>
+  </db:query>
+
+  <db:execute query="user" name="'mars'"/>
+
+</program>

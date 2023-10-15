@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<o:type name="Notation" java:class="NotationNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    An Notation object represents a Notation from an XML Document Type.
+  </doc:p>
+
+  <o:parent name="Node"/>
+
+  <o:variable name="name" java:class="String"/>
+  <o:variable name="publicId" java:class="String"/>
+  <o:variable name="systemId" java:class="String"/>
+
+  <o:constructor>
+    <o:param name="other" type="Notation"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+	 name = other.name;
+	 publicId = other.publicId;
+	 systemId = other.systemId;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public NotationNode(String name, String publicId, String systemId){
+        this();
+        this.name = name;
+	this.publicId = publicId;
+	this.systemId = systemId;
+   }
+
+    public String getNotationName(){
+        return name;
+    }
+
+    public String getSystemId(){
+        return systemId;
+    }
+
+    public String getPublicId(){
+        return publicId;
+    }
+  </java:code>
+
+  <o:function name="name" type="Name">
+    <doc:p>Get the name of this notation.</doc:p>
+    <java:code>
+      return new NameNode(new Name(name));
+    </java:code>
+  </o:function>
+
+  <o:function name="systemId" type="String">
+    <doc:p>Get the system ID of this <doc:type/>.</doc:p>
+    <java:code>
+      return new StringNode(systemId);
+    </java:code>
+  </o:function>
+
+  <o:function name="publicId" type="String">
+    <doc:p>Get the public ID of this <doc:type/>.</doc:p>
+    <java:code>
+      return new StringNode(publicId);
+    </java:code>
+  </o:function>
+</o:type>

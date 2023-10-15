@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates Java Database Extensions -->
+<o:program xmlns:o="http://www.o-xml.org/lang/" 
+	   xmlns:ex="http://www.o-xml.org/examples/"
+	   xmlns:db="http://www.o-xml.com/db/">
+
+  <db:connection log="true">
+    <db:url>jdbc:mysql://localhost:3306/test</db:url>
+    <db:driver>com.mysql.jdbc.Driver</db:driver>
+  </db:connection>
+
+  <db:execute sql="create table if not exists users(id int primary key auto_increment, name varchar(30), surname varchar(30))"/>
+
+  <db:execute sql="insert into users(name, surname) values('Evariste', 'Galois'), ('Pierre', 'Fermat'), ('Leonhard', 'Euler')"/>
+
+  <o:set user-id="2"/>
+
+  <o:variable name="name">
+    <db:execute sql="select name from users where id={$user-id}">{$name}</db:execute>
+  </o:variable>
+
+  <o:log msg="name: {$name}"/>
+
+  <db:query name="setUserName">
+    <db:param name="userId" type="Number"/>
+    <db:param name="name" type="String"/>
+    <db:sql>update users set name = {$name} where id = {$userId}</db:sql>
+  </db:query>
+
+  <db:call query="setUserName" userId="$user-id" name="'Figaro'"/>
+
+  <db:execute sql="select name from users where id={$user-id}">
+    <user name="{$name}"/>
+  </db:execute>
+
+  <db:call query="setUserName" userId="$user-id" name="$name"/>
+
+  <db:execute sql="select name from users where id={$user-id}">
+    <user>{$name}</user>
+  </db:execute>
+
+  <db:query name="user">
+    <db:param name="userId" type="Number"/>
+    <db:sql>select * from users where id = {$userId}</db:sql>
+    <db:result>
+      <user userId="{$id}">
+	<name name="{$name}">{$name}</name>
+	<description>Full name: {$name} {$surname}</description>
+      </user>
+    </db:result>
+  </db:query>
+
+  <db:call query="user" userId="$user-id"/>
+
+</o:program>

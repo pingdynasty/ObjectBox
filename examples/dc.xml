@@ -1,0 +1,328 @@
+<?xml version="1.0"?>
+<program xmlns:o="http://www.o-xml.org/lang" 
+         xmlns:dc="http://www.o-xml.com/examples/dc"
+         xmlns:s="http://www.o-xml.com/examples/standard">
+
+  <o:variable name="currTok" select="''"/>
+  <o:variable name="numberValue" select="0"/>
+  <o:variable name="nameString" select="''"/>
+
+  <o:variable name="table"></o:variable>
+
+  <o:variable name="NAME" select="1"/>
+  <o:variable name="NUMBER" select="2"/>
+  <o:variable name="END" select="3"/>
+  <o:variable name="PLUS" select="'+'"/>
+  <o:variable name="MINUS" select="'-'"/>
+  <o:variable name="MUL" select="'*'"/>
+  <o:variable name="DIV" select="'/'"/>
+  <o:variable name="PRINT" select="';'"/>
+  <o:variable name="ASSIGN" select="'='"/>
+  <o:variable name="LP" select="'('"/>
+  <o:variable name="RP" select="')'"/>
+
+  <o:function name="tokenValue">
+    <o:param name="ch"/>
+    <o:do>
+      <o:choose>
+        <o:when test="$ch = '1'"><o:copy-of select="$NAME"/></o:when>
+        <o:when test="$ch = '2'"><o:copy-of select="$NUMBER"/></o:when>
+        <o:when test="$ch = '3'"><o:copy-of select="$END"/></o:when>
+        <o:when test="$ch = '+'"><o:copy-of select="$PLUS"/></o:when>
+        <o:when test="$ch = '-'"><o:copy-of select="$MINUS"/></o:when>
+        <o:when test="$ch = '*'"><o:copy-of select="$MUL"/></o:when>
+        <o:when test="$ch = '/'"><o:copy-of select="$DIV"/></o:when>
+        <o:when test="$ch = ';'"><o:copy-of select="$PRINT"/></o:when>
+        <o:when test="$ch = '='"><o:copy-of select="$ASSIGN"/></o:when>
+        <o:when test="$ch = '('"><o:copy-of select="$LP"/></o:when>
+        <o:when test="$ch = ')'"><o:copy-of select="$RP"/></o:when>
+      </o:choose>
+    </o:do>
+  </o:function>
+
+  <!-- return nodeset containing the alphabetical characters of 'ch' -->
+  <o:function name="isalpha">
+    <o:param name="ch" type="Object"/>
+    <o:do>
+      <o:value-of select="translate($ch, translate($ch,
+        'abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVXYZ', ''), '')"/>
+    </o:do>
+  </o:function>
+
+  <!-- return nodeset containing the numeric characters of 'ch' -->
+  <o:function name="isnum">
+    <o:param name="ch" type="Object"/>
+    <o:do>
+      <o:value-of select="translate($ch, translate($ch, '0123456789', ''), '')"/>
+    </o:do>
+  </o:function>
+
+  <o:function name="isalnum">
+    <o:param name="ch" type="Object"/>
+    <o:do>
+      <o:value-of select="isalpha($ch) | isnum($ch)"/>
+    </o:do>
+  </o:function>
+  
+  <o:function name="look">
+    <o:param name="p"/>
+    <o:do>
+      <o:variable name="n" select="$table/entry[string = $p]"/>
+      <o:choose>
+        <o:when test="$n">
+          <!-- found match -->
+          <o:copy-of select="$n"/>
+        </o:when>
+        <o:otherwise>
+          <!-- lookup failed -->
+          <dc:error>name not found</dc:error>
+        </o:otherwise>
+      </o:choose>
+    </o:do>
+  </o:function>
+
+  <o:procedure name="dc:insert">
+    <o:param name="s"/>
+    <o:param name="value"/>
+    <o:do>
+      <o:log>
+        insert name <o:value-of select="$s"/>.
+        insert value <o:value-of select="$value"/>.
+      </o:log>
+      <!-- insert or update -->
+      <o:variable name="table">
+        <o:copy-of select="$table/entry[string != $s]"/>
+        <entry>
+          <string><o:value-of select="$s"/></string>
+          <value><o:value-of select="$value"/></value>
+        </entry>
+      </o:variable>
+    </o:do>
+  </o:procedure>
+    
+  <o:procedure name="s:putback">
+    <!-- imitate cin.putback(select) -->
+    <o:param name="select"/>
+    <o:do>
+      <o:variable name="input" select="concat($select, $input)"/>
+    </o:do>
+  </o:procedure>
+
+  <o:procedure name="s:get">
+    <!-- imitate cin.get() -->
+    <o:param name="type" select="'char'"/>
+    <o:do>
+      <o:choose>
+        <o:when test="not($input)"/>
+        <o:when test="$type = 'char'">
+          <o:value-of select="substring($input, 1, 1)"/>
+          <o:variable name="input" select="substring($input, 2)"/>
+        </o:when>
+        <o:when test="$type = 'number'">
+          <o:variable name="ch"><s:get/></o:variable>
+          <o:variable name="num" select="0"/>
+          <o:while test="isnum($ch) or $ch = '.'">
+            <o:variable name="num" select="concat($num, $ch)"/>
+            <o:variable name="ch"><s:get/></o:variable>
+          </o:while>
+          <s:putback select="$ch"/>
+          <o:copy-of select="number($num)"/>
+          <o:log select="concat('number: ', $num, '.')"/>
+        </o:when>
+        <o:when test="$type = 'alnum'">
+          <o:variable name="ch"><s:get/></o:variable>
+          <o:variable name="value" select="''"/>
+          <o:while test="isalnum($ch)">
+            <o:variable name="value" select="concat($value, $ch)"/>
+            <o:variable name="ch"><s:get/></o:variable>
+          </o:while>
+          <s:putback select="$ch"/>
+          <o:value-of select="$value"/>
+          <o:log select="concat('alnum: ', $value, '.')"/>
+        </o:when>
+      </o:choose>
+    </o:do>
+  </o:procedure>
+
+  <o:procedure name="dc:getToken">
+    <o:do>
+      <o:variable name="ch"><s:get/></o:variable>
+      <o:choose>
+        <o:when test="not($ch)">
+          <o:variable name="currTok" select="$END"/>
+        </o:when>
+        <o:when test="$ch = ';' or $ch = '\n'">
+          <o:variable name="currTok" select="$PRINT"/>
+        </o:when>
+        <o:when test="$ch = ' ' or $ch = '\t'">
+          <!-- skip whitespace -->
+          <dc:getToken/>
+        </o:when>
+        <o:when test="translate($ch, '*/+()=', '') = ''">
+          <o:variable name="currTok" select="tokenValue($ch)"/>
+        </o:when>
+        <o:when test="translate($ch, '0123456789.', '') = ''">
+          <s:putback select="$ch"/>
+          <o:variable name="numberValue"><s:get type="'number'"/></o:variable>
+          <o:variable name="currTok" select="$NUMBER"/>
+        </o:when>
+        <o:otherwise>
+          <!-- NAME, NAME=, or error -->
+          <o:choose>
+            <o:when test="isalpha($ch)">
+              <o:variable name="nameString"><s:get type="'alnum'"/></o:variable>
+              <o:variable name="currTok" select="$NAME"/>
+            </o:when>
+            <o:otherwise>
+              <dc:error>bad token: <o:value-of select="$ch"/></dc:error>
+              <o:variable name="currTok" select="$PRINT"/>
+            </o:otherwise>
+          </o:choose>
+        </o:otherwise>
+      </o:choose>
+    </o:do>
+  </o:procedure>
+
+  <o:function name="term">
+    <!-- multiply and divide -->
+    <o:do>
+      <o:variable name="left" select="prim()"/>
+      <o:variable name="loop" select="true()"/>
+      <o:while test="$loop">
+        <o:choose>
+          <o:when test="$currTok = $MUL">
+            <!-- multiplication -->
+            <dc:getToken/> <!-- eat '*' -->
+            <o:variable name="left" select="$left * prim()"/>
+            <o:log select="concat('multiplication: ', $left)"/>
+          </o:when>
+          <o:when test="$currTok = $DIV">
+            <!-- division -->
+            <dc:getToken/> <!-- eat '/' -->
+            <o:variable name="d" select="prim()"/>
+            <o:log select="concat('division: ', $left, '/', $d)"/>
+            <o:choose>
+              <o:when test="$d = 0">
+                <dc:error>division by zero</dc:error>
+              </o:when>
+              <o:otherwise>
+                <o:variable name="left" select="$left div $d"/>
+              </o:otherwise>
+            </o:choose>
+          </o:when>
+          <o:otherwise>
+            <o:variable name="loop" select="false()"/><!-- stop looping -->
+            <o:copy-of select="$left"/>
+          </o:otherwise>
+        </o:choose>
+      </o:while>
+    </o:do>
+  </o:function>
+
+  <o:function name="expr">
+    <!-- add and subtract -->
+    <o:do>
+      <o:variable name="left" select="term()"/>
+      <o:variable name="loop" select="true()"/>
+      <o:while test="$loop">
+        <o:choose>
+          <o:when test="$currTok = $PLUS">
+            <!-- addition -->
+            <dc:getToken/> <!-- eat '+' -->
+            <o:variable name="left" select="$left + term()"/>
+            <o:log select="concat('addition: ', $left)"/>
+          </o:when>
+          <o:when test="$currTok = $MINUS">
+            <!-- subtraction -->
+            <dc:getToken/> <!-- eat '-' -->
+            <o:variable name="left" select="$left - term()"/>
+            <o:log select="concat('subtraction: ', $left)"/>
+          </o:when>
+          <o:otherwise>
+            <o:variable name="loop" select="false()"/><!-- stop looping -->
+            <o:copy-of select="$left"/>
+          </o:otherwise>
+        </o:choose>
+      </o:while>
+    </o:do>
+  </o:function>
+
+  <o:function name="prim">
+    <!-- handle primaries -->
+    <o:do>
+      <o:choose>
+        <o:when test="$currTok = $NUMBER">
+          <!-- floating point constant -->
+          <dc:getToken/>
+          <o:copy-of select="$numberValue"/>
+        </o:when>
+        <o:when test="$currTok = $NAME">
+          <dc:getToken/>
+          <o:choose>
+            <o:when test="$currTok = $ASSIGN">
+              <dc:getToken/>
+              <o:variable name="expr" select="expr()"/>
+              <dc:insert s="$nameString" value="$expr"/>
+              <o:copy-of select="$expr"/>
+            </o:when>
+            <o:otherwise>
+              <o:value-of select="look($nameString)/value"/>
+            </o:otherwise>
+          </o:choose>
+        </o:when>
+        <o:when test="$currTok = $MINUS">
+          <!-- unary minus -->
+          <dc:getToken/>
+          <o:copy-of select="-prim()"/>
+        </o:when>
+        <o:when test="$currTok = $LP">
+          <dc:getToken/>
+          <o:variable name="e" select="expr()"/>
+          <o:choose>
+            <o:when test="$currTok != $RP">
+              <dc:error>')' expected</dc:error>
+            </o:when>
+            <o:otherwise>
+              <dc:getToken/>
+              <o:copy-of select="$e"/>
+            </o:otherwise>
+          </o:choose>
+        </o:when>
+        <o:when test="$currTok = $END">1</o:when>
+        <o:otherwise>
+          <dc:error>primary expected</dc:error>
+        </o:otherwise>
+      </o:choose>
+    </o:do>
+  </o:function>
+
+  <dc:insert s="'pi'" value="3.1415926535897932385"/>
+  <dc:insert s="'e'" value="2.7182818284590452354"/>
+
+  <o:variable name="input" select="'150/1.1934; 4+5;'"/>
+
+  <o:while test="$input">
+    <dc:getToken/>
+    <o:log select="concat('main currTok: ', $currTok, '.')"/>
+    <o:choose>
+      <o:when test="$currTok = $END">
+        <o:variable name="input" select="''"/>
+      </o:when>
+      <o:when test="$currTok = $PRINT">
+        <o:log select="'print'"/>
+      </o:when>
+      <o:otherwise>
+        <o:variable name="expr" select="expr()"/>
+        <o:log select="$expr"/>
+        <expression>
+          <o:copy-of select="$expr"/>
+        </expression>
+      </o:otherwise>
+    </o:choose>
+  </o:while>
+<!--
+  <o>
+    <o:copy-of select="$table"/>
+  </o>
+-->  
+</program>

@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<o:type name="Attribute" java:class="AttributeNode"
+  xmlns:o="http://www.o-xml.org/lang/" 
+  xmlns:java="http://www.o-xml.org/java"
+  xmlns:doc="http://www.o-xml.org/namespace/document/"
+  xmlns:ut="http://www.o-xml.org/namespace/unit-test/">
+
+  <doc:p>
+    An Attribute object represents an XML Attribute node.
+  </doc:p>
+
+  <o:variable name="name" java:class="Name"/>
+  <o:variable name="value" java:class="String"/>
+
+  <o:parent name="Node"/>
+
+  <!-- copy constructor -->
+  <o:constructor>
+    <o:param name="other" type="Attribute"/>
+    <o:param name="deep" java:class="boolean"/>
+    <java:code>
+      name = other.name;
+      value = other.value;
+    </java:code>
+  </o:constructor>
+
+  <java:code>
+    public AttributeNode(Name name, String value){
+      this();
+      this.name = name;
+      this.value = value;
+    }
+
+    public Name getNodeName(){
+        return name;
+    }
+
+    public String getValue(){
+        return value;
+    }
+
+    public String toString(){
+        return super.toString()+"["+name+','+value+"]";
+    }
+</java:code>
+
+  <ut:dataset name="attr">
+    <dir href="file:///home/mars/tmp"/>
+  </ut:dataset>
+
+  <o:constructor>
+    <o:param name="name"/>
+    <o:param name="value"/>
+    <java:code>
+      this.name = new Name(name.stringValue());
+      this.value = value.stringValue();
+    </java:code>
+  </o:constructor>
+
+  <o:constructor>
+    <o:param name="name" type="Name"/>
+    <o:param name="value"/>
+    <java:code>
+      this.name = name.getName();
+      this.value = value.stringValue();
+    </java:code>
+  </o:constructor>
+
+  <o:function name="name" type="Name">
+    <doc:p>Get the name of this attribute.</doc:p>
+    <doc:return>A Name node.</doc:return>
+    <java:code>
+      return new NameNode(name);
+    </java:code>
+    <ut:test>
+      <ut:input ref="attr"/>
+      <ut:definition>
+        <o:return select="$input/dir/@href.name()"/>
+      </ut:definition>
+      <ut:result>href</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="value">
+    <doc:p>Get the value of this attribute.</doc:p>
+    <doc:return>A String node.</doc:return>
+    <java:code>
+      return new StringNode(value);
+    </java:code>
+    <ut:test>
+      <ut:input ref="attr"/>
+      <ut:definition>
+        <o:return select="$input/dir/@href.value()"/>
+      </ut:definition>
+      <ut:result>file:///home/mars/tmp</ut:result>
+    </ut:test>
+  </o:function>
+
+  <o:function name="string">
+    <java:code>
+      return new StringNode(value);
+    </java:code>
+    <ut:test>
+      <ut:input ref="attr"/>
+      <ut:definition>
+        <o:return select="$input/dir/@href.string()"/>
+      </ut:definition>
+      <ut:result>file:///home/mars/tmp</ut:result>
+    </ut:test>
+  </o:function>
+
+<!-- tbd!
+  <o:function name="replace">
+    <o:param name="replacement"/>
+    <java:code>
+      Node parent = this.getParent();
+      if(parent == null)
+         return NodesetNode.EMPTY_SET;
+      parent.setAttribute(name, replacement.stringValue());
+      return parent;
+    </java:code>
+  </o:function>
+-->
+</o:type>

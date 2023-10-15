@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- example that demonstrates regexp functions -->
+<program xmlns:o="http://www.o-xml.org/lang/" >
+
+  <o:if test="matches('hello', '[el]{3}')">
+    <o:log msg="matches: {'hello'.matches('[el]+')}"/>
+  </o:if>
+
+  <o:for-each name="match" select="match('8-12,15,18', '[1-8]+')">
+    <match><o:eval select="$match"/></match>
+  </o:for-each>
+
+  <o:for-each name="split" select="split('8-12,15,18', '[,-]')">
+    <split><o:eval select="$split"/></split>
+  </o:for-each>
+
+  <substitute><o:eval select="substitute('Tank b123: 85  Tank b256: 32  Tank b78: 22', 'b(\d+):', 'a$1-')"/></substitute>
+
+</program>

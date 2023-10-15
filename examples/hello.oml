@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<o:program xmlns:o="http://www.o-xml.org/lang/" content-type="text/plain">
+  <o:type name="HelloWorld">
+    <o:function name="hello">
+      <o:do>
+	<o:return select="'Hello World'"/>
+      </o:do>
+    </o:function>
+  </o:type>
+  <o:set instance="HelloWorld()"/>
+  <o:eval select="$instance.hello()"/>
+</o:program>

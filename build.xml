@@ -1,0 +1,471 @@
+<?xml version="1.0"?>
+<project name="ObjectBox" default="usage" basedir="." >
+
+  <path id="lib.path">
+    <pathelement location="lib"/>
+    <fileset dir="lib">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <property file="build.properties"/>
+
+  <target name="init">
+    <tstamp>
+      <format property="NOW" pattern="d MMM yyyy HH:mm:ss zzz" locale="en"/>
+    </tstamp>
+    <property name="proj.dir" value="${user.dir}"/>
+    <property name="src.dir" value="${proj.dir}/src"/>
+    <property name="src.xsl" value="${src.dir}/xslt"/>
+    <property name="src.oml" value="${src.dir}/oml"/>
+    <property name="src.javacc" value="${src.dir}/javacc"/>
+    <property name="src.junit" value="${src.dir}/junit"/>
+
+    <property name="build.dir" value="${proj.dir}/build"/>
+    <property name="build.classes" value="${build.dir}/classes"/>
+    <property name="build.java" value="${build.dir}/java"/>
+    <property name="build.docs" value="${build.dir}/docs"/>
+    <property name="build.javadoc" value="${build.docs}/javadoc"/>
+    <property name="build.junit" value="${build.dir}/junit"/>
+
+    <property name="xpath.parser.dir" value="${src.dir}/org/oXML/xpath/parser"/>
+    <property name="xpath.reldir" value="org/oXML/xpath"/>
+    <property name="objectbox.reldir" value="org/oXML/engine"/>
+
+    <!-- ignore system classpath so that it doesn't interfere with our libs -->
+    <property name="build.sysclasspath" value="ignore"/>
+
+  </target>
+
+  <target name="prepare" depends="init">
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${build.java}"/>
+    <mkdir dir="${build.classes}"/>
+    <mkdir dir="${build.docs}"/>
+    <mkdir dir="${build.javadoc}"/>
+  </target>
+
+  <target name="usage">
+    <echo message=""/>
+    <echo message="ObjectBox build script"/>
+    <echo message="-----------------------------------------"/>
+    <echo message=""/>
+    <echo message="Among the available targets are:"/>
+    <echo message=""/>
+    <echo message="compile  --> build all; don't create JARs"/>
+    <echo message="jar      --> create class-file JAR"/>
+    <echo message="pack     --> create self-contained executable JAR"/>
+    <echo message="tests    --> run tests"/>
+    <echo message=""/>
+  </target>
+
+  <target name="tasks" depends="prepare">
+    <taskdef name="std-java" classname="org.tagbox.ant.StdJava">
+      <classpath refid="lib.path"/>
+    </taskdef>
+  </target>
+
+  <target name="xpath.lexer" depends="prepare">
+    <uptodate property="lexer.isUpToDate"
+              srcfile="${xpath.parser.dir}/parser.lex"
+              targetfile="${xpath.parser.dir}/GeneratedLexer.java"/>
+    <antcall target="lexer">
+      <param name="input" value="${xpath.parser.dir}/parser.lex"/>
+      <param name="output" value="${xpath.parser.dir}/GeneratedLexer.java"/>
+    </antcall>
+  </target>
+
+  <target name="lexer" depends="prepare" unless="lexer.isUpToDate">
+    <dirname property="lexer.dirname" file="${input}"/>
+    <!-- run JLex -->
+    <java classname="JLex.Main"
+          fork="no">
+      <arg path="${input}"/>
+      <classpath refid="lib.path"/>
+    </java>
+    <move file="${lexer.dirname}/parser.lex.java"
+          tofile="${output}"/>
+  </target>
+
+  <target name="xpath.parser" depends="tasks, xpath.lexer">
+    <uptodate property="parser.isUpToDate"
+              srcfile="${xpath.parser.dir}/parser.cup"
+              targetfile="${xpath.parser.dir}/GeneratedParser.java"/>
+    <antcall target="parser">
+      <param name="input" value="${xpath.parser.dir}/parser.cup"/>
+    </antcall>
+  </target>
+
+  <target name="parser" depends="prepare" unless="parser.isUpToDate">
+    <!-- run JCup -->
+    <dirname property="parser.dirname" file="${input}"/>
+    <std-java classname="java_cup.Main"
+              fork="no"
+              stdin="${input}">
+      <arg line="-expect 5"/>
+      <arg line="-parser GeneratedParser"/>
+      <classpath refid="lib.path"/>
+    </std-java>
+    <!-- move the results to where they are needed -->
+    <move file="sym.java"
+          tofile="${parser.dirname}/sym.java"/>
+    <move file="GeneratedParser.java"
+          tofile="${parser.dirname}/GeneratedParser.java"/>
+  </target>
+
+  <target name="filter" depends="prepare">
+    <copy file="${src.dir}/txt/Version.java" todir="${build.java}/org/oXML/engine"
+          filtering="on" overwrite="true">
+      <filterset>
+	<filter token="version" value="${version}"/>
+	<filter token="package" value="org.oXML.engine"/>
+        <filter token="product" value="ObjectBox"/>
+      </filterset>
+    </copy>
+  </target>
+
+  <target name="obox.task" depends="prepare">
+    <taskdef name="obox" classname="org.oXML.extras.ant.ObjectBoxTask">
+      <classpath>
+        <path refid="lib.path"/>
+        <pathelement location="${build.classes}"/>
+        <pathelement location="${src.xsl}"/>
+<!--         <pathelement location="${build.dir}/obox.jar"/> -->
+      </classpath>
+    </taskdef>
+  </target>
+
+  <target name="tests.lang.gen" depends="prepare">
+    <mkdir dir="${build.dir}/test/tests"/>
+    <xslt basedir="${src.dir}" destdir="${build.dir}/test/tests"
+          style="${src.xsl}/unit-test.xsl" extension=".oml">
+      <include name="lang/**/*.oml"/>
+      <exclude name="lang/Nodeset.oml"/>
+      <classpath refid="lib.path"/>
+    </xslt>
+  </target>
+
+  <target name="tests.lang.run" depends="obox.task">
+    <!-- run the generated tests -->
+    <obox suffix=".xml" destdir="${build.dir}/test/results"
+          loglevel="${obox.loglevel}">
+      <fileset dir="${build.dir}/test/tests">
+        <include name="**/*.oml"/>
+      </fileset>
+    </obox>
+  </target>
+
+  <target name="tests.lang" depends="tests.lang.gen, tests.lang.run"/>
+
+  <target name="tests.report" depends="obox.task">
+    <!-- create the test summary -->
+    <obox in="${src.oml}/test-summary.oml"
+          out="${build.dir}/test/summary.xml"
+          loglevel="${obox.loglevel}">
+      <param name="dir" value="${build.dir}/test/results"/>
+    </obox>
+    <!-- turn the results into html -->
+    <xslt basedir="${build.dir}/test" destdir="${build.docs}/test"
+      style="${src.xsl}/test-report.xsl" extension=".html">
+      <include name="**/*.xml"/>
+      <classpath refid="lib.path"/>
+    </xslt>
+  </target>
+
+  <target name="tests.run" depends="obox.task">
+    <!-- run the standalone XML tests -->
+    <obox suffix=".xml" destdir="${build.dir}/test/results"
+          loglevel="${obox.loglevel}" mode="test">
+      <fileset dir="${src.dir}/test">
+        <include name="**/*.oml"/>
+      </fileset>
+    </obox>
+    <!-- run the standalone SML tests -->
+    <obox suffix=".xml" destdir="${build.dir}/test/results"
+          loglevel="${obox.loglevel}" mode="test" sml="true">
+      <fileset dir="${src.dir}/test">
+        <include name="**/*.sml"/>
+      </fileset>
+    </obox>
+  </target>
+
+  <target name="tests.junit.compile" depends="prepare">
+    <mkdir dir="${build.junit}"/>
+    <javac destdir="${build.junit}"
+	   source="${source}"
+           target="${target}"
+	   debug="${debug}">
+      <src path="${src.junit}"/>
+      <include name="**/*.java"/>
+      <classpath location="${build.classes}"/>
+      <classpath refid="lib.path"/>
+    </javac>
+  </target>
+
+  <target name="tests.junit.run" depends="prepare">
+    <junit printsummary="yes" haltonfailure="yes" haltonerror="yes">
+      <classpath location="${src.junit}"/>
+      <classpath location="${build.junit}"/>
+      <classpath location="${build.classes}"/>
+      <classpath location="${build.dir}"/>
+      <classpath location="${build.dir}/obox.jar"/>
+      <classpath refid="lib.path"/>
+      <formatter type="xml"/>
+      <formatter type="plain" usefile="false"/>
+      <batchtest todir="${build.junit}">
+        <fileset dir="${src.junit}" includes="**/*Tests.java, **/*Test.java"/>
+      </batchtest>
+    </junit>
+  </target>
+
+  <target name="tests.junit.report" depends="prepare">
+    <junitreport todir="${build.junit}">
+      <fileset dir="${build.junit}">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report todir="${build.junit}"/>
+    </junitreport>
+  </target>
+
+  <target name="tests.junit" depends="tests.junit.compile, tests.junit.run, tests.junit.report"/>
+
+  <target name="tests" depends="tests.lang, tests.run, tests.report"/>
+
+  <target name="lang.types.gen" depends="prepare">
+    <mkdir dir="${build.java}/org/oXML/type/"/>
+    <!-- generate type classes -->
+    <xslt basedir="${src.dir}/lang" destdir="${build.java}/org/oXML/type/"
+	  style="generator/class.xsl" extension="Node.java">
+      <include name="*.oml"/>
+      <exclude name="Nodeset.oml"/>
+      <classpath refid="lib.path"/>
+    </xslt> 
+  </target>
+
+  <target name="lang.gen" depends="lang.types.gen">
+    <!-- generate module class -->
+    <xslt in="${src.dir}/lang/module.xml" out="${build.java}/org/oXML/type/CoreModule.java"
+	  style="generator/module.xsl">
+      <classpath refid="lib.path"/>
+    </xslt> 
+  </target>
+
+  <target name="compile" depends="lang.gen, xpath.parser, filter">
+    <javac destdir="${build.classes}"
+	   source="${source}"
+           target="${target}"
+	   debug="${debug}">
+      <src path="${build.java}"/>
+      <src path="${src.dir}"/>
+      <include name="org/**/*.java"/>
+      <exclude name="${objectbox.reldir}/mapping/xni/**"/>
+      <exclude name="org/oXML/extras/reflection/**"/>
+      <classpath refid="lib.path"/>
+    </javac>
+  </target>
+
+<!--   <target name="reflection.gen" depends="prepare"> -->
+<!--     <mkdir dir="${build.java}/lang/reflection"/> -->
+<!--     <xslt basedir="${src.dir}/lang/reflection"  -->
+<!--       destdir="${build.java}/lang/reflection" -->
+<!--       style="${src.dir}/lang/reflection/java.xsl" extension="Node.java"> -->
+<!--       <include name="*.oml"/> -->
+<!--       <classpath refid="lib.path"/> -->
+<!--     </xslt>  -->
+<!--   </target> -->
+
+<!--   <target name="reflection.compile" depends="reflection.gen"> -->
+<!--     <javac srcdir="${build.java}/lang/reflection" -->
+<!--            destdir="${build.classes}" -->
+<!-- 	   source="${source}" -->
+<!--            target="${target}" -->
+<!--            debug="${debug}"> -->
+<!--       <classpath refid="lib.path"/> -->
+<!--     </javac> -->
+<!--   </target> -->
+
+<!--   <target name="reflection" depends="reflection.compile"/> -->
+
+  <target name="readme" depends="prepare">
+    <copy todir="${build.dir}" filtering="on" overwrite="true">
+      <fileset dir="${proj.dir}" includes="readme.txt"/>
+      <filterset>
+	<filter token="os" value="${os.name}"/>
+	<filter token="arch" value="${os.arch}"/>
+	<filter token="java.version" value="${java.version}"/>
+	<filter token="ant.version" value="${ant.version}"/>
+	<filter token="project" value="${ant.project.name}"/>
+	<filter token="user" value="${user.name}"/>
+	<filter token="now" value="${NOW}"/>
+	<filtersfile file="build.properties"/>
+      </filterset>
+    </copy>
+  </target>
+
+  <target name="jar" depends="compile, readme"
+	  description="jar up obox.jar">
+    <jar jarfile="${build.dir}/obox.jar">
+      <fileset dir="${src.xsl}" includes="unit-test.xsl, test-report.xsl"/>
+      <fileset dir="${src.xsl}" includes="doc2html.xsl, doc2docbook.xsl"/>
+      <fileset dir="${build.classes}" includes="**/*.class"/>
+      <fileset dir="${build.classes}" includes="**/*.properties"/>
+      <fileset dir="${build.dir}" includes="readme.txt"/>
+      <fileset dir="${proj.dir}" includes="licence.txt, changes.txt"/>
+      <zipfileset dir="${src.dir}/xsd" prefix="org/oXML/extras/springframework/" 
+                  includes="spring.xsd"/>
+      <zipfileset dir="${src.dir}/properties/" prefix="META-INF/" 
+                  includes="spring.handlers,spring.schemas"/>
+      <manifest>
+	<attribute name="Main-Class" value="org.oXML.engine.ObjectBox"/>
+<!--	<attribute name="Class-Path" value="../lib/tagbox-utils.jar"/>-->
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="all" depends="jar"/>
+
+  <target name="source" depends="prepare">
+    <property name="prefix" value="ObjectBox-${version}-src"/>
+    <zip destfile="${build.dir}/ObjectBox-${version}-src.zip">
+      <zipfileset dir="." prefix="${prefix}">
+	<exclude name="build/**"/>
+      </zipfileset>
+    </zip>
+  </target>
+
+  <target name="clean" depends="init" description="Clean up the build">
+    <delete dir="${build.dir}"/>
+    <delete file="${xpath.parser.dir}/GeneratedParser.java"/>
+    <delete file="${xpath.parser.dir}/GeneratedLexer.java"/>
+    <delete file="${xpath.parser.dir}/sym.java"/>
+  </target>
+
+  <target name="htmldocs" depends="init">
+    <xslt basedir="${src.dir}/lang" destdir="${build.docs}/lang"
+      style="${src.dir}/lang/doc.xsl" extension=".html">
+      <include name="**/*.oml"/>
+      <classpath refid="lib.path"/>
+    </xslt>
+  </target>
+
+  <target name="javadocs" depends="prepare">
+    <javadoc packagenames="org.oXML.*"
+             destdir="${build.javadoc}" source="${source}">
+      <fileset dir="${src.dir}">
+        <include name="org/**/*.java"/>
+        <exclude name="${objectbox.reldir}/mapping/xni/**"/>
+        <exclude name="org/oXML/extras/reflection/**"/>
+      </fileset>
+      <fileset dir="${build.java}"/>
+      <classpath refid="lib.path"/>
+    </javadoc>
+  </target>
+
+  <target name="xmldocs" depends="prepare, obox.task">
+    <property name="build.oml.dir" value="${build.docs}"/>
+    <mkdir dir="${build.oml.dir}"/>
+    <!-- unpack o:Lib oml files -->
+    <unjar src="lib/olib.jar" dest="${build.oml.dir}"/>
+    <!-- copy core type source files to the same dir for cross referencing -->
+    <copy todir="${build.oml.dir}" overwrite="false">
+      <fileset dir="${src.dir}" includes="lang/**/*.oml" /><!-- excludes="lang/reflection"/>  -->
+    </copy>
+    <xslt basedir="${build.oml.dir}" destdir="${build.docs}"
+          style="${src.xsl}/doc2docbook.xsl" extension=".xml">
+      <include name="**/*.oml"/>
+      <classpath refid="lib.path"/>
+    </xslt>
+    <!-- generate the o:Lib sidebar and index pages -->
+    <obox in="${src.oml}/doc-sidebar.oml" 
+          out="${build.docs}/lib/index.xml"
+          loglevel="${obox.loglevel}">
+      <classpath>
+        <path refid="lib.path"/>
+        <pathelement location="${build.dir}/obox.jar"/>
+      </classpath>
+      <param name="dir" value="${build.docs}/lib"/>
+    </obox>
+    <!-- generate core type sidebar and index page -->
+    <copy file="${src.dir}/lang/module.xml" tofile="${build.docs}/lang.oml"/>
+    <obox in="${src.oml}/doc-sidebar.oml" 
+          out="${build.docs}/index.xml"
+          loglevel="${obox.loglevel}">
+      <classpath>
+        <path refid="lib.path"/>
+        <pathelement location="${build.dir}/obox.jar"/>
+      </classpath>
+      <param name="dir" value="${build.docs}"/>
+    </obox>
+  </target>
+
+  <target name="docs" depends="javadocs, xmldocs">
+    <!-- create a zip with JavaDocs plus DocBook XML for core and o:Lib types -->
+    <!-- todo: turn xml docs into html with indexes and all. -->
+    <zip destfile="${build.dir}/ObjectBox-docs.zip">
+      <fileset dir="${build.docs}">
+        <include name="**/*.xml"/>
+      </fileset>
+      <fileset dir="${build.docs}">
+        <include name="javadoc/**"/>
+      </fileset>
+    </zip>
+  </target>
+
+  <target name="pack" depends="compile, readme">
+    <taskdef name="pack" classname="org.sadun.util.ant.Pack">
+      <classpath refid="lib.path"/>
+    </taskdef>
+
+    <unjar src="lib/olib.jar" dest="${build.dir}/oml/lib"/>
+
+    <copy file="${src.dir}/xsd/spring.xsd" todir="${build.dir}/org/oXML/extras/springframework/"/>
+    <copy file="${src.dir}/properties/spring.handlers" todir="${build.dir}/META-INF/"/>
+    <copy file="${src.dir}/properties/spring.schemas" todir="${build.dir}/META-INF/"/>
+
+    <pack classes="org.oXML.engine.ObjectBox"
+      targetJar="${build.dir}/objectbox.jar"
+      manifestMainClass="org.oXML.engine.ObjectBox"
+      excludePkg="java.,javax.,sun.,org.w3c.,org.xml.,org.apache.tools.,org.apache.commons.,org.apache.struts.,org.springframework.">
+      <additionalfileset dir="${proj.dir}" includes="licence.txt, changes.txt"/>
+      <additionalfileset dir="${src.xsl}" includes="unit-test.xsl, test-report.xsl"/>
+      <additionalfileset dir="${src.xsl}" includes="doc2html.xsl, doc2docbook.xsl"/>
+      <additionalfileset dir="${build.dir}" includes="readme.txt"/>
+      <additionalclass name="org.oXML.extras.ant.ObjectBoxTask"/>
+      <additionalclass name="org.oXML.extras.http.ObjectBoxServlet"/>
+      <additionalclass name="org.oXML.extras.http.ObjectBoxFilter"/>
+      <additionalclass name="org.oXML.extras.http.ObjectBoxAction"/>
+      <additionalclass name="org.oXML.extras.db.DatabaseExtensions"/>
+      <additionalclass name="org.oXML.extras.db.JdbcConnector"/>
+      <additionalclass name="org.oXML.extras.java.JavaExtensions"/>
+      <additionalclass name="org.oXML.extras.xinclude.XIncludeExtensions"/>
+      <additionalclass name="org.oXML.extras.springframework.oXMLScriptFactory"/>
+      <additionalclass name="org.oXML.extras.springframework.oXMLNamespaceHandler"/>
+      <additionalclass name="org.apache.oro.io.GlobFilenameFilter"/>
+      <additionalfileset dir="${build.dir}/oml/lib" includes="**/*.oml"/>
+      <additionalfileset dir="${build.dir}" includes="META-INF/*"/>
+      <additionalfileset dir="${build.dir}" includes="org/oXML/extras/springframework/spring.xsd"/>
+      <classpath>
+        <path refid="lib.path"/>
+        <pathelement location="${build.classes}"/>
+	<pathelement location="${java.home}/../Classes/jsse.jar"/>
+	<pathelement location="${java.home}/../Classes/classes.jar"/>
+      </classpath>
+    </pack>
+  </target>
+
+  <target name="outils" depends="prepare">
+    <javac destdir="${build.classes}"
+	   source="${source}"
+           target="${target}"
+	   debug="${debug}">
+      <src path="${src.dir}"/>
+      <include name="org/oXML/util/Log.java"/>
+      <classpath refid="lib.path"/>
+    </javac>
+    <jar jarfile="${build.dir}/outils.jar">
+      <fileset dir="${build.classes}" includes="org/oXML/util/Log.class"/>
+      <fileset dir="${proj.dir}" includes="licence.txt"/>
+    </jar>
+  </target>
+
+</project>

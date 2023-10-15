@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ut:suite xmlns:o="http://www.o-xml.org/lang/"
+          xmlns:ut="http://www.o-xml.org/namespace/unit-test/"
+	  xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:meta>
+
+    <doc:purpose>Various tests to verify the integrity of the o:Path and XML parsers.</doc:purpose>
+
+    <ut:dataset name="OperatorElements">
+      <div:foo xmlns:div="urn:namespace:foo">
+        mixed
+        <div:mod or="foobar"/>
+        content
+        <div/>
+        <mod/>
+        <and>or</and>
+        <or/>
+      </div:foo>
+    </ut:dataset>
+
+    <ut:dataset name="NodeTestElements">
+      <node:foo xmlns:node="urn:namespace:foo">
+        <node/>
+        <text>text</text>
+        <comment><!-- comment --></comment>
+        <processing-instruction>
+          <?test value?>
+        </processing-instruction>
+      </node:foo>
+    </ut:dataset>
+
+    <ut:test>
+      <ut:definition>
+        <o:set value="string($input/ns:foo)"
+               xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="contains($value, 'mixed')"/>
+        <o:assert test="contains($value, 'content')"/>
+      </ut:definition>
+      <ut:input ref="OperatorElements"/>
+    </ut:test>
+
+    <ut:test>
+      <ut:definition>
+        <o:set value="string($input/div:foo)"
+               xmlns:div="urn:namespace:foo"/>
+        <o:assert test="contains($value, 'mixed')"/>
+        <o:assert test="contains($value, 'content')"/>
+      </ut:definition>
+      <ut:input ref="OperatorElements"/>
+    </ut:test>
+
+    <ut:test>
+      <doc:p>Test that operator names can be used as namespace names in o:Path expressions</doc:p>
+      <ut:definition>
+        <o:assert test="string($input/div:foo)"
+                  xmlns:div="urn:namespace:foo"/>
+        <o:assert test="string($input/mod:foo)"
+                  xmlns:mod="urn:namespace:foo"/>
+        <o:assert test="string($input/and:foo)"
+                  xmlns:and="urn:namespace:foo"/>
+        <o:assert test="string($input/or:foo)"
+                  xmlns:or="urn:namespace:foo"/>
+      </ut:definition>
+      <ut:input ref="OperatorElements"/>
+    </ut:test>
+
+    <ut:test>
+      <doc:p>Test that operator names can be used as element names in o:Path expressions</doc:p>
+      <ut:definition>
+        <o:assert test="$input/ns:foo/div"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="$input/ns:foo/mod"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="$input/ns:foo/and"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="$input/ns:foo/or"
+                  xmlns:ns="urn:namespace:foo"/>
+      </ut:definition>
+      <ut:input ref="OperatorElements"/>
+    </ut:test>
+
+    <ut:test>
+      <ut:definition>
+        <o:return select="string($input/div:foo/and)"
+                  xmlns:div="urn:namespace:foo"/>
+      </ut:definition>
+      <ut:input ref="OperatorElements"/>
+      <ut:result>or</ut:result>
+    </ut:test>
+
+    <ut:test>
+      <doc:p>Test that operator names can be used as attribute names in o:Path expressions</doc:p>
+      <ut:definition>
+        <o:return select="string($input/div:foo/div:mod/@or)"
+                  xmlns:div="urn:namespace:foo"/>
+      </ut:definition>
+      <ut:input ref="OperatorElements"/>
+      <ut:result>foobar</ut:result>
+    </ut:test>
+
+    <ut:test>
+      <doc:p>Test that node-test names can be used as namespace names in o:Path expressions</doc:p>
+      <ut:definition>
+        <o:assert test="$input/node:foo"
+                  xmlns:node="urn:namespace:foo"/>
+        <o:assert test="$input/text:foo"
+                  xmlns:text="urn:namespace:foo"/>
+        <o:assert test="$input/comment:foo"
+                  xmlns:comment="urn:namespace:foo"/>
+        <o:assert test="$input/processing-instruction:foo"
+                  xmlns:processing-instruction="urn:namespace:foo"/>
+      </ut:definition>
+      <ut:input ref="NodeTestElements"/>
+    </ut:test>
+
+    <ut:test>
+      <doc:p>Test that node-test names can be used as element names in o:Path expressions</doc:p>
+      <ut:definition>
+        <o:assert test="$input/ns:foo/node"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="$input/ns:foo/text"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="$input/ns:foo/comment"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="$input/ns:foo/processing-instruction"
+                  xmlns:ns="urn:namespace:foo"/>
+      </ut:definition>
+      <ut:input ref="NodeTestElements"/>
+    </ut:test>
+
+    <ut:test>
+      <doc:p>Test combination of nodetests with elements and namespaces that have nodetest names.</doc:p>
+      <ut:definition>
+        <o:assert test="$input/node:foo/node()"
+                  xmlns:node="urn:namespace:foo"/>
+        <o:assert test="not($input/node:foo/node/node())"
+                  xmlns:node="urn:namespace:foo"/>
+        <o:assert test="$input/text:foo/text/text()"
+                  xmlns:text="urn:namespace:foo"/>
+        <o:assert test="not($input/text:foo/node/text())"
+                  xmlns:text="urn:namespace:foo"/>
+        <!-- comment not there because it has been stripped during parsing -->
+        <o:assert test="not($input/ns:foo/comment/comment())"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="not($input/ns:foo/text/comment())"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="$input/ns:foo/processing-instruction/processing-instruction()"
+                  xmlns:ns="urn:namespace:foo"/>
+        <o:assert test="not($input/ns:foo/processing-instruction())"
+                  xmlns:ns="urn:namespace:foo"/>
+      </ut:definition>
+      <ut:input ref="NodeTestElements"/>
+    </ut:test>
+
+  </o:meta>
+
+</ut:suite>

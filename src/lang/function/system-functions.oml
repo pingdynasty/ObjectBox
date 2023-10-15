@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<o:do name="system-functions" 
+      xmlns:o="http://www.o-xml.org/lang/"
+      xmlns:java="http://www.o-xml.org/java"
+      xmlns:ut="http://www.o-xml.org/namespace/unit-test/" 
+      xmlns:doc="http://www.o-xml.org/namespace/document/">
+
+  <o:function name="program">
+    <o:param name="ctxt" java:class="org.oXML.engine.RuntimeContext"/>
+    <doc:p>
+      Get the current program.
+    </doc:p>
+    <java:code>
+      return new ProgramNode((org.oXML.engine.InterpretedProgram)ctxt.getProgram());
+    </java:code>
+  </o:function>
+
+  <o:function name="narrow"
+              java:throws="ObjectBoxException">
+    <o:param name="typename"/>
+    <o:param name="object"/>
+    <doc:p>Cast the <doc:param name="object"/> to a super type. This restricts the accessible interface to that of <doc:param name="typename"/>, which must be the name of a super type of this <doc:param name="object"/>.</doc:p>
+    <java:code>
+      Name nm = new Name(typename.stringValue());
+      Type type = object.getType().getParentType(nm);
+      if(type == null)
+          throw new ObjectBoxException("invalid "+object.getType().getName()+" supertype: "+nm);
+      return new CastNode(object, type);
+    </java:code>
+  </o:function>
+
+</o:do>
